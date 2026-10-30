@@ -1,0 +1,8 @@
+{
+  "calibrated_on": "development",
+  "dataset_version": "fieldwork-docqa-v1",
+  "min_term_coverage": 0.5,
+  "min_top_score": 0.2,
+  "schema_version": 1,
+  "stoplist_version": 1
+}

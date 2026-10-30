@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import collections
+import hashlib
 import json
 import math
 import re
@@ -18,15 +19,20 @@ def words(text):
 
 
 class Index:
-    def __init__(self, directory=ROOT / 'corpus', chunk_size=85, overlap=15):
+    def __init__(self, directory=ROOT / 'corpus', chunk_size=85, overlap=15, documents=None):
         if not 0 <= overlap < chunk_size:
             raise ValueError('overlap must be smaller than chunk_size')
         self.chunks = []
-        for path in sorted(Path(directory).glob('*.md')):
-            tokens = path.read_text(encoding='utf-8').split()
+        if documents is None:
+            documents = {p.name: p.read_text(encoding='utf-8') for p in sorted(Path(directory).glob('*.md'))}
+        self.documents = dict(documents)
+        for name, content in sorted(self.documents.items()):
+            tokens = content.split()
             for start in range(0, len(tokens), chunk_size - overlap):
-                self.chunks.append(dict(id=f'{path.stem}:{start // (chunk_size-overlap)+1}',
-                                        source=path.name, text=' '.join(tokens[start:start+chunk_size])))
+                self.chunks.append(dict(id=f'{Path(name).stem}:{start // (chunk_size-overlap)+1}',
+                                        source=name, text=' '.join(tokens[start:start+chunk_size]),
+                                        word_start=start, word_end=min(start+chunk_size, len(tokens)),
+                                        source_sha256=hashlib.sha256(content.encode()).hexdigest()))
                 if start + chunk_size >= len(tokens):
                     break
         counts = [collections.Counter(words(c['text'])) for c in self.chunks]
@@ -47,10 +53,16 @@ class Index:
                 sorted(scores, key=lambda pair: (-pair[0], pair[1]['id']))[:k] if score > 0]
 
     def answer(self, question):
+        from .abstention import decide, load_policy
         hits = self.search(question)
-        return dict(mode='offline · extractive / TF-IDF', question=question, sources=hits,
-                    answer='\n\n'.join(f"[{h['id']}] {h['text']}" for h in hits)
-                    or 'No matching evidence in the sample corpus. Try a question about agents, retrieval, or serving.')
+        support = decide(question, hits, load_policy())
+        sources = hits if support['decision'] == 'answer' else []
+        message = ('No matching evidence in the sample corpus.' if not hits else
+                   'Not enough lexical evidence to return an answer. Try a more specific question using the document vocabulary.')
+        return dict(mode='offline · extractive / TF-IDF · lexical gate', question=question, sources=sources,
+                    decision=support['decision'], support_check=support,
+                    retrieval_evidence=hits,
+                    answer='\n\n'.join(f"[{h['id']}] {h['text']}" for h in sources) or message)
 
 
 EVAL_CASES = [
@@ -67,7 +79,7 @@ def evaluate(index):
         hits = index.search(question)
         cases.append(dict(question=question, expected=expected, hit=any(h['source'] == expected for h in hits),
                           retrieved=[h['id'] for h in hits]))
-    return dict(metric='document hit rate @ 3', value=sum(c['hit'] for c in cases)/len(cases),
+    return dict(metric='legacy smoke · document hit rate @ 3', value=sum(c['hit'] for c in cases)/len(cases),
                 cases=cases, note='Four instructional fixtures; not held-out production evaluation.')
 
 
