@@ -17,6 +17,14 @@ python3 -m lab serve
 Open **http://127.0.0.1:8080**. Stop with Ctrl-C. Choose another port with
 `python3 -m lab serve --port 8081`. Use the `127.0.0.1` URL for browser API calls.
 
+The dashboard's **Docs** tab includes quickstart commands, workflow architecture,
+simulated versus real behavior, optional model-serving setup, metric definitions,
+and troubleshooting. Each demo links to relevant help. Documentation sections
+have shareable local routes such as `http://127.0.0.1:8080/#docs/models`;
+these links work only while a lab is running on the viewer's own machine.
+Use the Docs links or the top tabs to return to demos without clearing results.
+The top tabs support Left/Right arrows and Home/End keys.
+
 ## What works
 
 - **Retrieval:** loads the four bundled Markdown documents, creates overlapping

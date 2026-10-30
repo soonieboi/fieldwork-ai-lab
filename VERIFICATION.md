@@ -70,3 +70,23 @@ risk but cannot prove that every possible secret format is absent.
 
 The full 26-test suite passed again after publication preparation. Runtime
 authentication remains user-supplied through LAB_API_KEY in the environment.
+
+## Frontend documentation update
+
+Added an integrated Docs tab with seven sections: quickstart, architecture,
+retrieval, agents, model setup, evaluation/metrics, and troubleshooting. Each
+demo has contextual help and documentation links back to the demos. Hash routes
+select sections without clearing demo results; the tabs support arrow keys and
+Home/End.
+
+The 26-test suite passed after this frontend change. The extracted JavaScript
+passed `node --check`. Browser checks in Chrome verified Docs opening, repeated
+tab and section clicks without duplicate content, direct section reload,
+keyboard navigation, contextual help, and return navigation preserving retrieval
+results. Retrieval evaluation, completed agents, budget exhaustion, and synthetic
+serving replay continued to work.
+
+Inspected the documentation at 1280, 390, and 320 pixel viewport widths. At both
+narrow widths the page width matched the viewport width, with no horizontal page
+overflow. Setup/model commands and troubleshooting text remained readable.
+No new model integration, inference, dependency, or deployment was added.
