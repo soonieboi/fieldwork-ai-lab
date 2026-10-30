@@ -30,7 +30,10 @@ The top tabs support Left/Right arrows and Home/End keys.
 - **Retrieval:** loads the four bundled Markdown documents, creates overlapping
   85-word chunks, embeds them as normalized sparse TF-IDF vectors, and ranks by
   cosine similarity. Answers are quoted source passages with stable chunk IDs.
-  Unknown vocabulary yields an explicit no-evidence response. No neural model.
+  A development-calibrated lexical gate can abstain even when search finds
+  similar passages. It is not semantic sufficiency or confidence calibration;
+  it can refuse supported questions and accept unsupported/conflicting ones.
+  Diagnostic retrieval is separate from answer sources. No neural model.
 - **Agents:** a deterministic planner → researcher → reviewer → finish loop,
   with selectable tasks and a 1–6 step budget. Roles execute sequentially.
   Only corpus search and term-coverage checks are available. No shell, network,
@@ -40,8 +43,12 @@ The top tabs support Left/Right arrows and Home/End keys.
   delays, never model performance. The real adapter measures TTFT, mean interval
   between nonempty content events, duration, and server-reported completion
   tokens per total request second. Missing token usage stays unavailable.
-- **Evaluation:** four labeled retrieval examples with document hit rate @ 3.
-  This is an instructional smoke evaluation, not a representative held-out set.
+- **Evaluation:** a versioned 50-case authored synthetic documentation-QA suite,
+  with 30 development and 20 held-out cases scored separately. It compares raw
+  extraction and a lexical gate using exact evidence spans, retrieval metrics,
+  decision confusion counts, abstention, provenance, and slice denominators.
+  It does not judge semantic factuality or LLM outputs. The four-question legacy
+  document-hit smoke check is retained and explicitly labeled as such.
 
 ## CLI
 
@@ -50,6 +57,9 @@ python3 -m lab ask 'How do bounded agents restrict tools?'
 python3 -m lab agent --task safety --budget 6
 python3 -m lab agent --task retrieval --budget 3
 python3 -m lab evaluate
+python3 scripts/check_evaluation.py
+python3 -m lab eval-suite --split development --output results/development.json
+python3 -m lab eval-suite --split heldout --output results/heldout.json
 python3 -m lab replay
 python3 -m unittest discover -s tests -v
 ```
@@ -58,6 +68,13 @@ CLI output is JSON. A budget of three stops after review and returns
 `budget_exhausted` without a final answer. Unknown tasks and invalid budgets
 are rejected. Core logic is in `lab/core.py`, HTTP routes in `lab/server.py`,
 and the responsive dashboard in `web/index.html`.
+
+Read the pre-implementation [evaluation design](docs/evaluation-design.md) and
+[baseline results](docs/evaluation-results.md) before interpreting scores. The
+policy was frozen using development cases only, before held-out scoring. The
+public held-out split is author-known and shares underlying facts with development;
+it is not an independently blind generalization test. No held-out threshold
+tuning is performed. Future iterations must treat these cases as exposed data.
 
 ## Optional real endpoint / vLLM
 

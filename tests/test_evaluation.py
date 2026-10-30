@@ -111,6 +111,18 @@ class GateTests(unittest.TestCase):
     def test_feature_order_is_deterministic(self):
         self.assertEqual(features('gamma beta beta',[dict(score=.3,text='beta gamma')])['content_terms'],['beta','gamma'])
 
+    def test_scored_gate_matches_app_outputs_on_development_cases(self):
+        data=load_dataset('development')
+        for case in data['cases']:
+            index=Index(documents=data['profiles'][case['profile']])
+            actual=index.answer(case['question'])
+            scored=predict(index,case['question'],'lexical_gate',load_policy())
+            self.assertEqual(actual['decision'],scored['decision'])
+            self.assertEqual(actual['support_check']['reason'],scored['reason'])
+            self.assertEqual(actual['sources'],scored['sources'])
+            if scored['decision']=='answer':
+                self.assertEqual(actual['answer'],scored['answer'])
+
 
 class DatasetValidationTests(unittest.TestCase):
     def test_public_split_sizes_categories_and_disjoint_ids(self):
