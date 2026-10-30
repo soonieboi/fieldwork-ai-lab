@@ -1,4 +1,5 @@
 import copy
+from contextlib import contextmanager
 import json
 import tempfile
 import unittest
@@ -125,6 +126,83 @@ class GateTests(unittest.TestCase):
 
 
 class DatasetValidationTests(unittest.TestCase):
+    @contextmanager
+    def fixture(self):
+        import shutil
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)/'data'
+            shutil.copytree(DATA,root)
+            yield root
+
+    def edit_manifest(self, root, edit):
+        manifest=json.loads((root/'manifest.json').read_text())
+        edit(manifest)
+        (root/'manifest.json').write_text(json.dumps(manifest))
+
+    def test_unmanifested_corpus_document_is_rejected_for_both_splits(self):
+        with self.fixture() as root:
+            (root/'corpus/extra.md').write_text('A new answer must not silently enter the frozen corpus.')
+            for split in ('development','heldout'):
+                with self.subTest(split=split), self.assertRaisesRegex(ValueError,'inventory differs'):
+                    load_dataset(split,root)
+
+    def test_unexpected_profile_document_or_nested_file_is_rejected(self):
+        for relative in ('profiles/extra.md','profiles/nested/extra.md','corpus/extra.txt'):
+            with self.subTest(path=relative), self.fixture() as root:
+                path=root/relative
+                path.parent.mkdir(parents=True,exist_ok=True)
+                path.write_text('Unexpected fixture')
+                with self.assertRaisesRegex(ValueError,'(inventory differs|Unexpected fixture directory)'):
+                    load_dataset('development',root)
+
+    def test_manifest_must_cover_every_corpus_and_profile_file(self):
+        for relative in ('corpus/agents.md','profiles/budget-dispute.md'):
+            with self.subTest(path=relative), self.fixture() as root:
+                self.edit_manifest(root,lambda m:m['files'].pop(relative))
+                with self.assertRaisesRegex(ValueError,'(inventory differs|hash coverage differ)'):
+                    load_dataset('development',root)
+
+    def test_required_split_and_evidence_hashes_cannot_be_omitted(self):
+        for relative in ('development.json','heldout.json','evidence.json'):
+            with self.subTest(path=relative), self.fixture() as root:
+                self.edit_manifest(root,lambda m:m['files'].pop(relative))
+                with self.assertRaisesRegex(ValueError,'Missing manifest hash coverage'):
+                    load_dataset('development',root)
+
+    def test_manifest_listed_but_missing_file_is_rejected(self):
+        with self.fixture() as root:
+            (root/'corpus/agents.md').unlink()
+            with self.assertRaisesRegex(ValueError,'inventory differs'):
+                load_dataset('development',root)
+
+    def test_profile_hash_without_profile_reference_is_rejected(self):
+        with self.fixture() as root:
+            self.edit_manifest(root,lambda m:m['profiles'].__setitem__('conflict',[]))
+            with self.assertRaisesRegex(ValueError,'hash coverage differ'):
+                load_dataset('development',root)
+
+    def test_fixture_symlinks_are_rejected(self):
+        with self.fixture() as root:
+            (root/'corpus/extra.md').symlink_to(root/'corpus/agents.md')
+            with self.assertRaisesRegex(ValueError,'Symlink fixture'):
+                load_dataset('development',root)
+
+    def test_loading_uses_the_verified_bytes_not_a_second_disk_read(self):
+        with self.fixture() as root:
+            original=Path.read_bytes
+            target=(root/'corpus/agents.md').resolve()
+            before=target.read_bytes()
+            def change_after_read(path,*args,**kwargs):
+                content=original(path,*args,**kwargs)
+                if path==target:
+                    target.write_text('Unverified replacement after the hash-read')
+                return content
+            with patch.object(Path,'read_bytes',change_after_read):
+                loaded=load_dataset('development',root)
+            self.assertEqual(loaded['profiles']['base']['agents.md'],before.decode())
+            with self.assertRaisesRegex(ValueError,'hash mismatch'):
+                load_dataset('development',root)
+
     def test_public_split_sizes_categories_and_disjoint_ids(self):
         # Structural validation only: no held-out predictions or policy tuning.
         dev=load_dataset('development');held=load_dataset('heldout')

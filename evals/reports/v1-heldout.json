@@ -4030,7 +4030,7 @@
   "source_sha256": {
     "lab/abstention.py": "5899e7468d12a85457e4eee5ea108b6146cbf06323d7ccb73f4bc6b66598e40d",
     "lab/core.py": "dd81f10f5cf5bb70806656533303c53479415b7ac265271d4ace91b469915b1f",
-    "lab/evaluation.py": "83eb55520f29b1110441a9c2e716f18a7dfcaed7fb21263dffc6aceb70b7103e"
+    "lab/evaluation.py": "35de8a1790667043b53706caaa8d5012ccaa16bf80c11c9a9425a719deb59290"
   },
   "split": "heldout",
   "split_note": "Author-known public held-out split excluded from calibration; related facts/paraphrases occur across splits. Not a blind generalization test."

@@ -32,31 +32,86 @@ def safe_path(root, relative):
     return path
 
 
+def validate_inventory(directory, manifest):
+    """Require hash coverage for exactly the fixture bytes that may be loaded."""
+    files = manifest.get('files')
+    required = {'development.json', 'heldout.json', 'evidence.json'}
+    if not isinstance(files, dict) or not required <= files.keys():
+        raise ValueError('Missing manifest hash coverage for required case/evidence files')
+    for name, expected in files.items():
+        parts = Path(name).parts
+        fixture = (len(parts) == 2 and parts[0] in ('corpus', 'profiles')
+                   and Path(parts[1]).suffix == '.md')
+        if name not in required and not fixture:
+            raise ValueError('Unexpected manifest fixture path: '+name)
+        if Path(name).as_posix() != name or '\\' in name:
+            raise ValueError('Noncanonical manifest fixture path')
+        if not isinstance(expected, str) or len(expected) != 64 or any(c not in '0123456789abcdef' for c in expected):
+            raise ValueError('Invalid manifest SHA256: '+name)
+    corpus = sorted(name for name in files if name.startswith('corpus/'))
+    if not corpus:
+        raise ValueError('Manifest must cover a nonempty corpus')
+    profiles = manifest.get('profiles')
+    if not isinstance(profiles, dict) or profiles.get('base') != []:
+        raise ValueError('Invalid manifest profiles')
+    referenced = set()
+    for extra in profiles.values():
+        if not isinstance(extra, list) or any(not isinstance(name, str) for name in extra) or len(extra) != len(set(extra)):
+            raise ValueError('Invalid or duplicate profile source')
+        for name in extra:
+            if not isinstance(name, str) or Path(name).name != name or Path(name).suffix != '.md' or '\\' in name:
+                raise ValueError('Invalid profile source path')
+            referenced.add('profiles/'+name)
+    if referenced != {name for name in files if name.startswith('profiles/')}:
+        raise ValueError('Profile references and manifest hash coverage differ')
+    actual = set()
+    for path in directory.rglob('*'):
+        relative = path.relative_to(directory).as_posix()
+        if path.is_symlink():
+            raise ValueError('Symlink fixture is not allowed: '+relative)
+        if path.is_dir():
+            if relative not in ('corpus', 'profiles'):
+                raise ValueError('Unexpected fixture directory: '+relative)
+        elif path.is_file():
+            actual.add(relative)
+        else:
+            raise ValueError('Unexpected fixture entry: '+relative)
+    expected = set(files) | {'manifest.json'}
+    if actual != expected:
+        raise ValueError('Fixture inventory differs from manifest; unexpected='+
+                         ','.join(sorted(actual-expected))+'; missing='+','.join(sorted(expected-actual)))
+    return corpus
+
+
 def load_dataset(split, directory=DATA):
     if split not in ('development', 'heldout'):
         raise ValueError('Choose development or heldout; splits are never pooled')
     directory = Path(directory)
-    manifest = json.loads((directory/'manifest.json').read_text())
+    manifest_bytes = (directory/'manifest.json').read_bytes()
+    manifest = json.loads(manifest_bytes)
     if manifest.get('version') != 'fieldwork-docqa-v1':
         raise ValueError('Unsupported dataset version')
-    # Calibration never reads or parses held-out cases, including their bytes.
+    corpus = validate_inventory(directory, manifest)
+    # Calibration checks the full inventory but never reads held-out case bytes.
     selected = f'{split}.json'
+    verified = {}
     for name, expected in manifest['files'].items():
         if name in ('development.json', 'heldout.json') and name != selected:
             continue
-        if digest(safe_path(directory, name)) != expected:
+        content = safe_path(directory, name).read_bytes()
+        if hashlib.sha256(content).hexdigest() != expected:
             raise ValueError('Dataset hash mismatch: '+name)
-    cases = json.loads((directory/selected).read_text())
-    evidence = json.loads((directory/'evidence.json').read_text())
-    texts = {name: safe_path(directory, 'corpus/'+name).read_text() for name in
-             sorted(p.name for p in (directory/'corpus').glob('*.md'))}
+        verified[name] = content
+    cases = json.loads(verified[selected])
+    evidence = json.loads(verified['evidence.json'])
+    texts = {Path(name).name: verified[name].decode('utf-8') for name in corpus}
     profiles = {}
     for profile, extra in manifest['profiles'].items():
         docs = dict(texts)
         for name in extra:
             if Path(name).name != name or name in docs:
                 raise ValueError('Invalid or duplicate profile source')
-            docs[name] = safe_path(directory, 'profiles/'+name).read_text()
+            docs[name] = verified['profiles/'+name].decode('utf-8')
         profiles[profile] = docs
     all_docs = {name: text for docs in profiles.values() for name, text in docs.items()}
     for label, span in evidence.items():
@@ -86,7 +141,7 @@ def load_dataset(split, directory=DATA):
                 if label not in evidence or evidence[label]['source'] not in profiles[case['profile']]:
                     raise ValueError('Evidence unavailable in case profile')
     return dict(manifest=manifest, cases=cases, evidence=evidence, profiles=profiles,
-                manifest_sha256=digest(directory/'manifest.json'), split=split)
+                manifest_sha256=hashlib.sha256(manifest_bytes).hexdigest(), split=split)
 
 
 def token_positions(spans):

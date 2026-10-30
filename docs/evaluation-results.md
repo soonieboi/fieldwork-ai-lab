@@ -115,3 +115,21 @@ check; its 100% result must not be substituted for this evaluation.
 Future iterations should version the policy/dataset and treat v1 held-out cases
 as exposed regression data. A stronger generalization claim needs new independent
 questions, broader documents, reviewed labels, and uncertainty reporting.
+
+## Independent-review integrity correction
+
+Review of draft head `9445e33` found that hash checks covered manifest-listed
+files, but the loader discovered additional corpus Markdown files independently.
+An unmanifested document could therefore affect predictions under the same
+reported dataset identity. The loader now requires the exact fixture inventory,
+including corpus/profile files and case/evidence hash coverage, rejects unexpected
+files/directories/symlinks, and loads corpus text only from manifest-enumerated,
+verified bytes. The manifest identity is computed from the actual manifest bytes
+read for that run.
+
+Negative tests cover unexpected corpus/profile/nested files, omitted manifest
+coverage, missing files, unused profile hashes, symlinks, and mutation between
+verification and loading. Every development/held-out prediction and metric,
+dataset identity, case label, split, and policy value remains identical. Only
+the evaluator source hash in the two report artifacts changes. This is a loader
+integrity fix, not threshold tuning or a change to evidence scoring.

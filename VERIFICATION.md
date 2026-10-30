@@ -126,3 +126,11 @@ The committed reports retain false abstentions, a conflicting-source failure,
 and poisoned-instruction text exposure. Their limitations and denominators are
 explained in `docs/evaluation-results.md`. CI is scoped to these deterministic
 reports and stdlib tests on Python 3.10 and 3.14; it makes no model calls.
+
+Independent-review follow-up: **56 local tests passed** after enforcing exact
+fixture inventory and manifest hash coverage. Added negative tests for extra
+corpus/profile/nested files, missing manifest entries, missing files, unused
+profile references, and symlinks. A mutation test verifies the loader uses the
+same document bytes it hashed. Development/held-out reports reproduce byte for
+byte after refreshing evaluator-source hashes only; all scores, predictions,
+dataset hashes, labels, split membership and policy values are unchanged.
