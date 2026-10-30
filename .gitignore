@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+.venv/
+*.log
+*.zip
+*.pem
+*.key
+.DS_Store
+.coverage
+htmlcov/
+dist/
+build/
