@@ -11,6 +11,7 @@ import time
 import unittest
 from unittest.mock import patch
 import urllib.request
+from tests.http_client import urlopen as direct_urlopen
 import urllib.error
 from lab.generation import GenerationConfig,GenerationError
 from lab.serving import (SuiteConfig,WORKLOAD,BenchError,endpoint_from_env,measure_stream,percentile,
@@ -211,7 +212,7 @@ class Surface(unittest.TestCase):
             url=f'http://127.0.0.1:{s.server_port}/api/serving-suite'
             def post(data,origin=None):
                 req=urllib.request.Request(url,json.dumps(data).encode(),headers={'Content-Type':'application/json','Origin':origin or f'http://127.0.0.1:{s.server_port}'})
-                return urllib.request.urlopen(req,timeout=3)
+                return direct_urlopen(req,timeout=3)
             with post({}) as response:self.assertIn('SYNTHETIC',json.load(response)['metadata']['mode'])
             with self.assertRaises(urllib.error.HTTPError) as e:post({'mode':'endpoint'})
             self.assertEqual(e.exception.code,400);e.exception.close()

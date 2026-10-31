@@ -9,6 +9,7 @@ import threading
 import time
 import unittest
 import urllib.request
+from tests.http_client import urlopen as direct_urlopen
 import urllib.error
 from unittest.mock import patch
 
@@ -269,7 +270,7 @@ class AgentRouteTests(unittest.TestCase):
         if origin:headers['Origin']=self.url
         request=urllib.request.Request(self.url+'/api/model-agent/'+path,json.dumps(data).encode(),headers)
         try:
-            with urllib.request.urlopen(request,timeout=3) as r:return r.status,json.load(r)
+            with direct_urlopen(request,timeout=3) as r:return r.status,json.load(r)
         except urllib.error.HTTPError as r:
             with r:return r.code,json.load(r)
     def until_done(self,id):

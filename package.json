@@ -1,0 +1,8 @@
+{
+  "name": "fieldwork-verification",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Test-only browser smoke checks; the application runtime is Python stdlib",
+  "scripts": {"test:browser": "playwright test"},
+  "devDependencies": {"@playwright/test": "1.64.1"}
+}

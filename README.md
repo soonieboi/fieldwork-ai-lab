@@ -279,3 +279,31 @@ is the whole measured window including failed requests and rate pacing. Stream
 events are not tokens. No saturation, decode-speed, semantic-quality or tail
 reliability claim is made from this small mixed workload. See
 [the measurement design](docs/serving-benchmark-design.md) for bounds and caveats.
+
+## Final verification and local-use boundaries
+
+The server remains loopback-only. Use the exact `http://127.0.0.1:PORT` address;
+foreign/duplicate Host, ambiguous framing, compressed/oversized/short JSON and
+slow body reads are rejected. CSP permits the bundled script by hash; model text
+stays plain text. These are development safeguards, not authentication or a
+production hosting system. See [the threat model](docs/threat-model.md) and the
+integrated Docs → Local use & security section. Do not expose or tunnel the app.
+
+CI now runs checksum-pinned Gitleaks 8.30.1 over full fetched history and tracked
+files, with redacted output and a generated dummy detection control. To repeat
+using an official checksum-verified local binary:
+
+```bash
+python3 scripts/check_secrets.py --gitleaks /path/to/verified/gitleaks
+```
+
+Locked `@playwright/test` dependencies are test-only; Python runtime still has no
+third-party dependencies. CI installs matching Chromium only in its disposable
+runner and runs `npm run test:browser` with endpoint modes disabled and nonlocal
+browser traffic blocked. Browser checks cover everyday evidence/abstention,
+bounded agents, replay, synthetic serving, Docs and 320/390px layouts. No real
+model calls, credentials or deployment are required. Python HTTP test clients
+explicitly bypass inherited proxies and cached urllib openers without changing
+your machine's settings. Scanner/browser success has bounded coverage; live model
+support review, authorized endpoint access/spend and real GPU experiments remain
+future user-controlled work.

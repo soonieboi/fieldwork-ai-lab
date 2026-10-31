@@ -3,8 +3,10 @@ import json
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 import urllib.error
 import urllib.request
+from tests.http_client import urlopen as direct_urlopen
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from lab.core import Index, benchmark, evaluate, measure, replay, run_agent, sse_events
@@ -155,6 +157,12 @@ class MockModel(BaseHTTPRequestHandler):
 
 
 class EndpointTests(unittest.TestCase):
+    def setUp(self):
+        # The preserved legacy adapter builds a fresh opener from getproxies.
+        # Scope this patch to fake-endpoint tests; do not alter process env/global opener.
+        self.proxy_patch=patch('urllib.request.getproxies',return_value={})
+        self.proxy_patch.start();self.addCleanup(self.proxy_patch.stop)
+
     @classmethod
     def setUpClass(cls):
         cls.server = ThreadingHTTPServer(('127.0.0.1', 0), MockModel)
@@ -210,12 +218,12 @@ class HTTPTests(unittest.TestCase):
         headers = {'Content-Type': 'application/json'}
         if origin:
             headers['Origin'] = origin
-        return urllib.request.urlopen(urllib.request.Request(self.url+path, json.dumps(data).encode(), headers))
+        return direct_urlopen(urllib.request.Request(self.url+path, json.dumps(data).encode(), headers))
 
     def test_dashboard_and_status(self):
-        with urllib.request.urlopen(self.url) as r:
+        with direct_urlopen(self.url) as r:
             self.assertIn(b'fieldwork', r.read())
-        with urllib.request.urlopen(self.url+'/api/status') as r:
+        with direct_urlopen(self.url+'/api/status') as r:
             self.assertEqual(json.load(r)['mode'], 'offline')
 
     def test_rag_and_agent_routes(self):

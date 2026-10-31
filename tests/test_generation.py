@@ -11,6 +11,7 @@ import time
 import unittest
 import urllib.error
 import urllib.request
+from tests.http_client import urlopen as direct_urlopen
 from unittest.mock import patch
 
 from lab.core import Index, ROOT
@@ -282,7 +283,7 @@ class GenerationRouteTests(unittest.TestCase):
         if origin:headers['Origin']=self.url
         if host:headers['Host']=host
         try:
-            with urllib.request.urlopen(urllib.request.Request(self.url+'/api/generate',json.dumps(data).encode(),headers),timeout=3) as r:
+            with direct_urlopen(urllib.request.Request(self.url+'/api/generate',json.dumps(data).encode(),headers),timeout=3) as r:
                 return r.status,json.load(r)
         except urllib.error.HTTPError as r:
             with r:return r.code,json.load(r)
@@ -313,7 +314,7 @@ class GenerationRouteTests(unittest.TestCase):
         with fake_endpoint() as (url,server),patch.dict(os.environ,dict(ENV,LAB_GENERATION_BASE_URL=url),clear=True):
             status,result=self.request({'question':QUESTION,'corpus':'shop'})
             self.assertEqual(status,200);self.assertEqual(result['status'],'answer')
-            with urllib.request.urlopen(self.url+'/api/status') as r:public=json.load(r)
+            with direct_urlopen(self.url+'/api/status') as r:public=json.load(r)
             self.assertEqual(public['generation']['state'],'configured')
             self.assertNotIn(url,json.dumps(public));self.assertNotIn('deterministic-fixture-not-a-model',json.dumps(public))
 
