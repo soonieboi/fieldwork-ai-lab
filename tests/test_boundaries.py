@@ -80,7 +80,7 @@ class BoundaryTests(unittest.TestCase):
     def test_short_body_and_strict_json_errors_are_sanitized(self):
         with patch('lab.server.replay') as work:
             self.assertEqual(self.raw('Content-Length: 20\r\n',length=False,halfclose=True)[0],400)
-            for body in (b'{"x":1,"x":2}',b'{"x":NaN}',b'\xff',b'{"PRIVATE_BODY_FIXTURE":'):
+            for body in (b'{"x":1,"x":2}',b'{"x":NaN}',b'{"x":[1e309]}', '{"x":1}'.encode('utf-16'),b'\xff',b'{"PRIVATE_BODY_FIXTURE":'):
                 status,raw=self.raw(body=body);self.assertEqual(status,400);self.assertNotIn(b'PRIVATE_BODY_FIXTURE',raw)
         work.assert_not_called()
 

@@ -1,6 +1,7 @@
 import json
 import base64
 import hashlib
+import math
 import re
 import socket
 import threading
@@ -97,8 +98,15 @@ class Handler(BaseHTTPRequestHandler):
             finally:timer.cancel()
             if expired.is_set():return self.send(408,{'error':'Request body deadline exceeded'})
             if len(raw)!=size:raise ValueError('Incomplete request body')
-            try:data=strict_json(raw)
-            except GenerationError:raise ValueError('Use valid UTF-8 JSON with unique keys and finite numbers') from None
+            try:data=strict_json(raw.decode('utf-8'))
+            except (GenerationError,UnicodeError):raise ValueError('Use valid UTF-8 JSON with unique keys and finite numbers') from None
+            pending=[data]
+            while pending:
+                value=pending.pop()
+                if isinstance(value,float) and not math.isfinite(value):
+                    raise ValueError('Use finite JSON numbers')
+                if isinstance(value,dict):pending.extend(value.values())
+                elif isinstance(value,list):pending.extend(value)
             if not isinstance(data, dict):
                 raise ValueError('Expected a JSON object')
             if self.path in ('/api/model-agent/start','/api/model-agent/status','/api/model-agent/cancel'):
