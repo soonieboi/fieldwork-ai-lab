@@ -1,0 +1,529 @@
+[
+  {
+    "id": "search-read-finish",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "read_source",
+        "query": "",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "finish",
+        "query": "",
+        "source_id": "",
+        "claims": [
+          {
+            "text": "The time and condition requirements fit; a receipt is still required.",
+            "citations": [
+              "returns:1"
+            ]
+          }
+        ],
+        "reason": ""
+      }
+    ],
+    "expected_status": "completed",
+    "expected_tools": [
+      "search_documents",
+      "read_source"
+    ]
+  },
+  {
+    "id": "refine-search",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "read_source",
+        "query": "",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "finish",
+        "query": "",
+        "source_id": "",
+        "claims": [
+          {
+            "text": "The time and condition requirements fit; a receipt is still required.",
+            "citations": [
+              "returns:1"
+            ]
+          }
+        ],
+        "reason": ""
+      }
+    ],
+    "expected_status": "completed",
+    "expected_tools": [
+      "search_documents",
+      "search_documents",
+      "read_source"
+    ]
+  },
+  {
+    "id": "early-abstain",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "abstain",
+        "query": "",
+        "source_id": "",
+        "claims": [],
+        "reason": "The request needs clarification."
+      }
+    ],
+    "expected_status": "abstained",
+    "expected_tools": []
+  },
+  {
+    "id": "forbidden-tool",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "run_shell",
+        "query": "not executed",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": []
+  },
+  {
+    "id": "undiscovered-source",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "read_source",
+        "query": "",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": []
+  },
+  {
+    "id": "finish-without-read",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "finish",
+        "query": "",
+        "source_id": "",
+        "claims": [
+          {
+            "text": "The time and condition requirements fit; a receipt is still required.",
+            "citations": [
+              "returns:1"
+            ]
+          }
+        ],
+        "reason": ""
+      }
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": []
+  },
+  {
+    "id": "invalid-finish-citation",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "read_source",
+        "query": "",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "finish",
+        "query": "",
+        "source_id": "",
+        "claims": [
+          {
+            "text": "The time and condition requirements fit; a receipt is still required.",
+            "citations": [
+              "unknown:1"
+            ]
+          }
+        ],
+        "reason": ""
+      }
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": [
+      "search_documents",
+      "read_source"
+    ]
+  },
+  {
+    "id": "oversize-query",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": []
+  },
+  {
+    "id": "inactive-fields",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": []
+  },
+  {
+    "id": "boolean-version",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": true,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": []
+  },
+  {
+    "id": "malformed-response",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      "not JSON"
+    ],
+    "expected_status": "invalid_action",
+    "expected_tools": []
+  },
+  {
+    "id": "step-exhaustion",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "step_budget",
+    "expected_tools": [
+      "search_documents",
+      "search_documents"
+    ],
+    "limits": {
+      "max_steps": 2
+    }
+  },
+  {
+    "id": "requested-token-exhaustion",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "read_source",
+        "query": "",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "token_budget",
+    "expected_tools": [
+      "search_documents"
+    ],
+    "limits": {
+      "max_requested_tokens": 128
+    }
+  },
+  {
+    "id": "missing-reported-usage",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "read_source",
+        "query": "",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "finish",
+        "query": "",
+        "source_id": "",
+        "claims": [
+          {
+            "text": "The time and condition requirements fit; a receipt is still required.",
+            "citations": [
+              "returns:1"
+            ]
+          }
+        ],
+        "reason": ""
+      }
+    ],
+    "expected_status": "completed",
+    "expected_tools": [
+      "search_documents",
+      "read_source"
+    ],
+    "usage": "missing"
+  },
+  {
+    "id": "reported-cap-violation",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "usage_error",
+    "expected_tools": [],
+    "usage": "over-cap"
+  },
+  {
+    "id": "cancel-before-request",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "cancelled",
+    "expected_tools": [],
+    "cancel_at": "before_request"
+  },
+  {
+    "id": "cancel-after-response",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "cancelled",
+    "expected_tools": [],
+    "cancel_at": "after_response"
+  },
+  {
+    "id": "cancel-before-tool",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "cancelled",
+    "expected_tools": [],
+    "cancel_at": "before_tool"
+  },
+  {
+    "id": "deadline-before-tool",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      }
+    ],
+    "expected_status": "time_budget",
+    "expected_tools": [],
+    "clock_advance": 3,
+    "limits": {
+      "max_seconds": 2
+    }
+  },
+  {
+    "id": "provider-refusal",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [],
+    "expected_status": "provider_refused",
+    "expected_tools": [],
+    "provider_event": "refusal"
+  },
+  {
+    "id": "provider-transport-error",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [],
+    "expected_status": "provider_error",
+    "expected_tools": [],
+    "provider_event": "transport"
+  },
+  {
+    "id": "insufficient-original-question",
+    "question": "Can I return a bicycle helmet?",
+    "steps": [],
+    "expected_status": "insufficient_evidence",
+    "expected_tools": []
+  },
+  {
+    "id": "contract-valid-false-claim",
+    "question": "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?",
+    "steps": [
+      {
+        "schema_version": 1,
+        "action": "search_documents",
+        "query": "shoes return receipt",
+        "source_id": "",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "read_source",
+        "query": "",
+        "source_id": "returns:1",
+        "claims": [],
+        "reason": ""
+      },
+      {
+        "schema_version": 1,
+        "action": "finish",
+        "query": "",
+        "source_id": "",
+        "claims": [
+          {
+            "text": "Worn shoes are always returnable without a receipt.",
+            "citations": [
+              "returns:1"
+            ]
+          }
+        ],
+        "reason": ""
+      }
+    ],
+    "expected_status": "completed",
+    "expected_tools": [
+      "search_documents",
+      "read_source"
+    ],
+    "limitation": "Intentionally contradicted claim; workflow completion must not be reported as factual support."
+  }
+]

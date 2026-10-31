@@ -1,0 +1,11 @@
+{
+  "cases": 23,
+  "files": {
+    "cases.json": "61e827878f12942eadcff9fb46a31430164427382d8fbc9e654739e64d267760",
+    "corpus/returns.md": "1910520ed132ba239641deed992deb7a59135dc2cbeaaa384b439519756b2350"
+  },
+  "per_call_requested_cap": 128,
+  "provenance": "Authored scripted choices over an invented policy; no live agent, human/model judge, private input or quality study.",
+  "semantic_quality_assessed": false,
+  "version": "fieldwork-agent-contract-v1"
+}
