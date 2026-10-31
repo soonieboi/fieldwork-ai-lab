@@ -11,6 +11,9 @@ def main():
     serve.add_argument('--port', type=int, default=8080)
     ask = sub.add_parser('ask')
     ask.add_argument('question')
+    generated = sub.add_parser('generate', help='Opt-in endpoint response; citations do not establish truth')
+    generated.add_argument('question')
+    generated.add_argument('--corpus',choices=('shop','lab'),default='shop')
     agent = sub.add_parser('agent')
     agent.add_argument('--task', choices=['retrieval', 'safety', 'serving'], default='retrieval')
     agent.add_argument('--budget', type=int, default=6)
@@ -32,6 +35,14 @@ def main():
             return
         if args.command == 'ask':
             result = Index().answer(args.question)
+        elif args.command == 'generate':
+            from .generation import GenerationError, generate
+            from .core import ROOT
+            try:
+                result=generate(Index(ROOT/'examples/shop') if args.corpus=='shop' else Index(),args.question)
+            except GenerationError as exc:
+                print(json.dumps({'error':str(exc),'error_code':exc.code}))
+                raise SystemExit(1)
         elif args.command == 'agent':
             result = run_agent(Index(), args.task, args.budget)
         elif args.command == 'evaluate':

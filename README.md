@@ -25,6 +25,13 @@ these links work only while a lab is running on the viewer's own machine.
 Use the Docs links or the top tabs to return to demos without clearing results.
 The top tabs support Left/Right arrows and Home/End keys.
 
+The first browser example is an **invented shoe-shop returns policy**: “I bought
+a pair of shoes 10 days ago and haven't worn them. Can I return them?” The policy
+still requires a receipt; that detail must not be assumed. The contrasting bicycle
+helmet question asks about an unmentioned item. This is not a real merchant's
+policy or a real purchase. Choose the lab documents to explore the technical corpus.
+These examples live in `examples/shop/`, separately from the frozen v1 eval corpus.
+
 ## What works
 
 - **Retrieval:** loads the four bundled Markdown documents, creates overlapping
@@ -34,6 +41,11 @@ The top tabs support Left/Right arrows and Home/End keys.
   similar passages. It is not semantic sufficiency or confidence calibration;
   it can refuse supported questions and accept unsupported/conflicting ones.
   Diagnostic retrieval is separate from answer sources. No neural model.
+- **Optional cited generation:** an explicitly configured chat-completions endpoint
+  can return short claims citing supplied passages. Strict JSON/citation checks
+  reject invalid or incomplete responses; valid citations do not establish factual
+  support. Offline mode remains the default. Only fake HTTP endpoints were tested;
+  no live model quality or prompt-injection protection is claimed.
 - **Agents:** a deterministic planner → researcher → reviewer → finish loop,
   with selectable tasks and a 1–6 step budget. Roles execute sequentially.
   Only corpus search and term-coverage checks are available. No shell, network,
@@ -58,6 +70,7 @@ python3 -m lab agent --task safety --budget 6
 python3 -m lab agent --task retrieval --budget 3
 python3 -m lab evaluate
 python3 scripts/check_evaluation.py
+python3 scripts/check_generation_contract.py
 python3 -m lab eval-suite --split development --output results/development.json
 python3 -m lab eval-suite --split heldout --output results/heldout.json
 python3 -m lab replay
@@ -75,6 +88,56 @@ policy was frozen using development cases only, before held-out scoring. The
 public held-out split is author-known and shares underlying facts with development;
 it is not an independently blind generalization test. No held-out threshold
 tuning is performed. Future iterations must treat these cases as exposed data.
+
+## Optional cited-answer configuration
+
+Generation is separate from the serving benchmark. Nothing calls an endpoint until
+you explicitly enable generation and request an answer. Provision a compatible
+server yourself; no model or dependencies are downloaded by this project.
+
+```sh
+export LAB_GENERATION_ENABLED=1
+export LAB_GENERATION_BASE_URL=http://127.0.0.1:8000/v1
+export LAB_GENERATION_MODEL=YOUR_SERVED_MODEL
+export LAB_GENERATION_FORMAT=json_schema
+python3 -m lab serve --port 8081
+```
+
+Open the matching localhost URL, choose **Configured endpoint**, and submit a
+question; or use the CLI with the same environment:
+
+```sh
+python3 -m lab generate "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?" --corpus shop
+```
+
+Your question and retrieved excerpts are sent to the configured endpoint. Use only
+an authorized destination and data. No live provider calls or private documents
+were used to develop this adapter. For authentication, supply
+`LAB_GENERATION_API_KEY` through your private environment/secret manager. It does
+not inherit benchmark `LAB_API_KEY`. No keys or endpoint configuration go into
+the browser. `.env.example` has safe placeholders only; no env file is auto-loaded.
+
+HTTPS is required outside literal loopback IPs or `localhost`. Redirects/proxy
+inheritance are disabled; TLS verification stays enabled. Timeout defaults to
+10 seconds (1–30 allowed), with bounded request/context/response sizes. Connected
+requests are interrupted at the deadline; OS-managed DNS can exceed it. At most
+two browser generation requests run concurrently. There is no auto-retry or
+automatic paid-usage budget. Keep this unauthenticated development server local.
+
+Providers differ. `LAB_GENERATION_FORMAT=json_schema` requests strict structured
+output. Explicitly select `json_object` only for a server supporting JSON mode;
+local schema/citation checks still run. No silent downgrade occurs. Choose
+`LAB_GENERATION_TOKEN_FIELD=max_completion_tokens` if required by your server;
+the default is `max_tokens`. `LAB_GENERATION_MAX_TOKENS` defaults to 512 (1–1024).
+Unsupported features, refusals, invalid citations, and partial output are handled
+without displaying an unchecked partial answer or provider error bodies.
+
+Read the [pre-code design](docs/cited-generation-design.md) and the
+[separate generated-support review rubric](docs/generated-support-review.md).
+The 19 authored generation contract cases include a citation-valid but false
+claim: protocol validity is intentionally not presented as semantic correctness.
+Frozen v1 scores/reports are unchanged; generated paraphrases are never scored
+with extractive token offsets. Real-model quality remains unverified.
 
 ## Optional real endpoint / vLLM
 

@@ -22,3 +22,7 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Reproduce scoped baseline artifacts
         run: python scripts/check_evaluation.py
+      - name: Generation contract fixtures (no model inference or quality score)
+        run: python scripts/check_generation_contract.py
+      - name: Static frontend integrity and syntax (not a browser test)
+        run: python scripts/check_frontend.py
