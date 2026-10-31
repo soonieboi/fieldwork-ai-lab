@@ -90,3 +90,47 @@ Inspected the documentation at 1280, 390, and 320 pixel viewport widths. At both
 narrow widths the page width matched the viewport width, with no horizontal page
 overflow. Setup/model commands and troubleshooting text remained readable.
 No new model integration, inference, dependency, or deployment was added.
+
+## Scoped evaluation and abstention PR
+
+The documentation update was published to main at
+`adf7c4deb967845725d77e445936507f2a9e8ee6` before this branch was created.
+The evaluation design was committed before implementation; 50 authored cases
+and exact evidence spans were frozen before calibration. A 30-case development
+split selected the lexical policy, committed before the first 20-case held-out
+run. Both public splits are author-known; no independent human or model judge
+was used. Cases and policy were not tuned after held-out scoring.
+
+Final local checks: **48 tests passed** using Python 3.14.2, including all prior
+agent, serving, HTTP and retrieval regressions. New tests cover span-union
+arithmetic, multi-source evidence, fractional recall, exact provenance rather
+than citation presence, modified output/unknown citation rejection, conservative
+relevance precision, forbidden-span exposure, confusion-matrix denominators,
+null denominators, stale annotations, corpus hashes, split validation, production
+versus scored gate agreement, and held-out file-access rejection during calibration.
+
+`python3 scripts/check_evaluation.py` passed: two byte-identical runs per split
+match committed reports, and development-only calibration matches the frozen
+policy. No performance threshold is asserted to make the suite appear successful.
+`node --check` passed for the frontend JavaScript. Gitleaks directory scans found
+no leaks; history and staged-content checks are repeated before branch publication.
+Secret scanning is not a guarantee that every possible credential format is absent.
+
+Browser checks verified supported extraction, unsupported refund-policy abstention
+without answer passages, the explicitly labeled legacy smoke check, unchanged
+agent completion and synthetic replay, and the revised Docs evaluation section.
+At 390 pixels, documentation fit without horizontal page overflow. No real model,
+GPU, private data, or networked inference was used.
+
+The committed reports retain false abstentions, a conflicting-source failure,
+and poisoned-instruction text exposure. Their limitations and denominators are
+explained in `docs/evaluation-results.md`. CI is scoped to these deterministic
+reports and stdlib tests on Python 3.10 and 3.14; it makes no model calls.
+
+Independent-review follow-up: **56 local tests passed** after enforcing exact
+fixture inventory and manifest hash coverage. Added negative tests for extra
+corpus/profile/nested files, missing manifest entries, missing files, unused
+profile references, and symlinks. A mutation test verifies the loader uses the
+same document bytes it hashed. Development/held-out reports reproduce byte for
+byte after refreshing evaluator-source hashes only; all scores, predictions,
+dataset hashes, labels, split membership and policy values are unchanged.

@@ -219,10 +219,17 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(json.load(r)['mode'], 'offline')
 
     def test_rag_and_agent_routes(self):
-        with self.post('/api/ask', {'question':'TF-IDF'}) as r:
+        with self.post('/api/ask', {'question':'TF-IDF retrieval citations'}) as r:
             self.assertTrue(json.load(r)['sources'])
         with self.post('/api/agent', {'task':'serving','budget':3}) as r:
             self.assertEqual(json.load(r)['status'], 'budget_exhausted')
+
+    def test_unsupported_question_returns_abstention_without_answer_sources(self):
+        with self.post('/api/ask', {'question':'What is the vLLM subscription refund policy?'}) as r:
+            result=json.load(r)
+            self.assertEqual(result['decision'],'abstain')
+            self.assertEqual(result['sources'],[])
+            self.assertTrue(result['retrieval_evidence'])
 
     def test_cross_origin_rejected(self):
         with self.assertRaises(urllib.error.HTTPError) as e:

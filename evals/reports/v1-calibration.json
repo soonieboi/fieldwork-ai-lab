@@ -1,0 +1,231 @@
+{
+  "candidates": [
+    {
+      "false_answers": 11,
+      "objective": 22,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.0,
+        "min_top_score": 0.0,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 0
+    },
+    {
+      "false_answers": 8,
+      "objective": 16,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.5,
+        "min_top_score": 0.0,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 0
+    },
+    {
+      "false_answers": 3,
+      "objective": 12,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.75,
+        "min_top_score": 0.0,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 6
+    },
+    {
+      "false_answers": 3,
+      "objective": 17,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 1.0,
+        "min_top_score": 0.0,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 11
+    },
+    {
+      "false_answers": 10,
+      "objective": 20,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.0,
+        "min_top_score": 0.1,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 0
+    },
+    {
+      "false_answers": 7,
+      "objective": 14,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.5,
+        "min_top_score": 0.1,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 0
+    },
+    {
+      "false_answers": 3,
+      "objective": 12,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.75,
+        "min_top_score": 0.1,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 6
+    },
+    {
+      "false_answers": 3,
+      "objective": 17,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 1.0,
+        "min_top_score": 0.1,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 11
+    },
+    {
+      "false_answers": 9,
+      "objective": 21,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.0,
+        "min_top_score": 0.15,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 3
+    },
+    {
+      "false_answers": 7,
+      "objective": 17,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.5,
+        "min_top_score": 0.15,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 3
+    },
+    {
+      "false_answers": 3,
+      "objective": 13,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.75,
+        "min_top_score": 0.15,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 7
+    },
+    {
+      "false_answers": 3,
+      "objective": 18,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 1.0,
+        "min_top_score": 0.15,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 12
+    },
+    {
+      "false_answers": 4,
+      "objective": 11,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.0,
+        "min_top_score": 0.2,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 3
+    },
+    {
+      "false_answers": 3,
+      "objective": 9,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.5,
+        "min_top_score": 0.2,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 3
+    },
+    {
+      "false_answers": 3,
+      "objective": 13,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 0.75,
+        "min_top_score": 0.2,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 7
+    },
+    {
+      "false_answers": 3,
+      "objective": 18,
+      "policy": {
+        "calibrated_on": "development",
+        "dataset_version": "fieldwork-docqa-v1",
+        "min_term_coverage": 1.0,
+        "min_top_score": 0.2,
+        "schema_version": 1,
+        "stoplist_version": 1
+      },
+      "unnecessary_abstentions": 12
+    }
+  ],
+  "cases": 30,
+  "dataset": "fieldwork-docqa-v1",
+  "limitation": "Authored 2:1 error tradeoff, not measured user utility. Held-out cases not read.",
+  "manifest_sha256": "79f4241ad7bf73fee4c11aa270fd93d9f4fd6b29ce87b9e8a0c89ef5697844f4",
+  "objective": "2 * false_answers + unnecessary_abstentions; ties prefer higher coverage then score",
+  "selected": {
+    "false_answers": 3,
+    "objective": 9,
+    "policy": {
+      "calibrated_on": "development",
+      "dataset_version": "fieldwork-docqa-v1",
+      "min_term_coverage": 0.5,
+      "min_top_score": 0.2,
+      "schema_version": 1,
+      "stoplist_version": 1
+    },
+    "unnecessary_abstentions": 3
+  },
+  "split": "development"
+}

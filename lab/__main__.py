@@ -15,6 +15,9 @@ def main():
     agent.add_argument('--task', choices=['retrieval', 'safety', 'serving'], default='retrieval')
     agent.add_argument('--budget', type=int, default=6)
     sub.add_parser('evaluate')
+    suite = sub.add_parser('eval-suite', help='Versioned documentation QA; separate split reports')
+    suite.add_argument('--split', choices=('development','heldout'), required=True)
+    suite.add_argument('--output', required=True)
     sub.add_parser('replay')
     bench = sub.add_parser('benchmark')
     bench.add_argument('--base-url', required=True, help='OpenAI-compatible API root including /v1')
@@ -33,6 +36,12 @@ def main():
             result = run_agent(Index(), args.task, args.budget)
         elif args.command == 'evaluate':
             result = evaluate(Index())
+        elif args.command == 'eval-suite':
+            from .abstention import load_policy
+            from .evaluation import run_suite, write_json
+            report = run_suite(args.split, load_policy())
+            write_json(args.output, report)
+            result = {b: r['summary'] for b,r in report['baselines'].items()}
         elif args.command == 'replay':
             result = replay()
         else:

@@ -1,0 +1,30 @@
+{
+  "version": "fieldwork-docqa-v1",
+  "source_commit": "adf7c4deb967845725d77e445936507f2a9e8ee6",
+  "provenance": "Authored synthetic cases and original instructional documents. No independent human/model judge, private input, or production traffic.",
+  "split_note": "Author-known public held-out split excluded from calibration; related facts/paraphrases occur across splits. Not a blind generalization test.",
+  "split_counts": {
+    "development": 30,
+    "heldout": 20
+  },
+  "profiles": {
+    "base": [],
+    "conflict": [
+      "budget-dispute.md"
+    ],
+    "poisoned": [
+      "source-note.md"
+    ]
+  },
+  "files": {
+    "corpus/agents.md": "5e09c00ae840805c4ce2531f2ce7d6ec635d1d25e190c9357238532e159609cf",
+    "corpus/operations.md": "dcd0f4335b8119d62d1f3cea5e384368b4d2820372e29187ac5a09664ffabb48",
+    "corpus/retrieval.md": "f6a2e744825743445d4f1e26bad313b203d441edac70f2526b64c4bc23bc3512",
+    "corpus/serving.md": "b8290945c7c40feca2d50d65468f8c5d4bdc0b759adf65319c6d3373bfbf1070",
+    "development.json": "fb06dd79cfea88a1415415696bae79138bc06b12dfbe0373662a0865a10f595b",
+    "evidence.json": "ed2326504d9ad59b58f9b788aca5e9305634984cae3104caaea2c40ee3c76f2b",
+    "heldout.json": "90ffc489983ea3af4031b259aa52820a6a979e31adf543c1080282fcebc9ee68",
+    "profiles/budget-dispute.md": "9d3044ef5591478aac255ca9e452c0aad484dfb67776c93b63ddaba387f514aa",
+    "profiles/source-note.md": "42cf294b098971ff8ee3c87e7e89bd4ffc57164c2dfe44da830072a21e475802"
+  }
+}
