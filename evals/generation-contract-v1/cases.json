@@ -1,0 +1,116 @@
+[
+  {
+    "id": "valid-conditional",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"returns:1\"]}]}",
+    "expected_valid": true,
+    "notes": "Authored fixture, not a model sample. Citation/schema validity only."
+  },
+  {
+    "id": "valid-abstention",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"abstain\", \"reason\": \"The policy does not describe this item.\", \"claims\": []}",
+    "expected_valid": true,
+    "notes": "An unmentioned item should not be invented."
+  },
+  {
+    "id": "valid-contract-but-contradicted",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"Worn shoes can always be returned without a receipt.\", \"citations\": [\"returns:1\"]}]}",
+    "expected_valid": true,
+    "notes": "Intentionally false relative to the fictional policy. The validator must not claim it assesses factual support."
+  },
+  {
+    "id": "unknown-citation",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"other:1\"]}]}",
+    "expected_valid": false,
+    "notes": "IDs must come from actual supplied evidence."
+  },
+  {
+    "id": "duplicate-citation",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"returns:1\", \"returns:1\"]}]}",
+    "expected_valid": false,
+    "notes": "Duplicate citation IDs are invalid."
+  },
+  {
+    "id": "missing-citations",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\"}]}",
+    "expected_valid": false,
+    "notes": "Citation presence is required but is not sufficient for truth."
+  },
+  {
+    "id": "empty-citations",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": []}]}",
+    "expected_valid": false,
+    "notes": "Each claim needs a supplied citation."
+  },
+  {
+    "id": "empty-claim",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \" \", \"citations\": [\"returns:1\"]}]}",
+    "expected_valid": false,
+    "notes": "Empty claims are invalid."
+  },
+  {
+    "id": "long-claim",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"citations\": [\"returns:1\"]}]}",
+    "expected_valid": false,
+    "notes": "Claim bounds are local validation rules."
+  },
+  {
+    "id": "extra-root-property",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"returns:1\"]}], \"confidence\": 1}",
+    "expected_valid": false,
+    "notes": "Confidence is not assessed or accepted from this contract."
+  },
+  {
+    "id": "extra-claim-property",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"returns:1\"], \"html\": \"ignored\"}]}",
+    "expected_valid": false,
+    "notes": "Unknown claim properties are rejected."
+  },
+  {
+    "id": "wrong-version",
+    "raw_json": "{\"schema_version\": 2, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"returns:1\"]}]}",
+    "expected_valid": false,
+    "notes": "A contract upgrade must be explicit."
+  },
+  {
+    "id": "boolean-version",
+    "raw_json": "{\"schema_version\": true, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"returns:1\"]}]}",
+    "expected_valid": false,
+    "notes": "Boolean is not integer version 1."
+  },
+  {
+    "id": "abstention-with-claims",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"abstain\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": [\"returns:1\"]}]}",
+    "expected_valid": false,
+    "notes": "Abstention cannot carry an answer."
+  },
+  {
+    "id": "answer-without-claims",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": []}",
+    "expected_valid": false,
+    "notes": "An answer needs claims."
+  },
+  {
+    "id": "citation-is-string",
+    "raw_json": "{\"schema_version\": 1, \"status\": \"answer\", \"reason\": \"\", \"claims\": [{\"text\": \"The time and condition requirements fit; a receipt is still required.\", \"citations\": \"returns:1\"}]}",
+    "expected_valid": false,
+    "notes": "Types must match exactly."
+  },
+  {
+    "id": "duplicate-json-key",
+    "raw_json": "{\"schema_version\":1,\"schema_version\":1,\"status\":\"abstain\",\"reason\":\"No evidence\",\"claims\":[]}",
+    "expected_valid": false,
+    "notes": "Even duplicate keys with identical values are rejected."
+  },
+  {
+    "id": "nonfinite-json",
+    "raw_json": "{\"schema_version\":NaN,\"status\":\"abstain\",\"reason\":\"No evidence\",\"claims\":[]}",
+    "expected_valid": false,
+    "notes": "NaN is not valid contract JSON."
+  },
+  {
+    "id": "malformed-json",
+    "raw_json": "not a JSON object",
+    "expected_valid": false,
+    "notes": "Plain prose is not repaired into a response."
+  }
+]

@@ -1,9 +1,13 @@
 import json
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from .core import ROOT, TASKS, Index, evaluate, replay, run_agent
+from .generation import GenerationError, generate, public_status
 
 INDEX = Index()
+INDICES = {'lab': INDEX, 'shop': Index(ROOT/'examples/shop')}
+GENERATION_SLOTS = threading.BoundedSemaphore(2)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -23,7 +27,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, (ROOT / 'web/index.html').read_bytes(), 'text/html')
         if path == '/api/status':
             return self.send(200, dict(mode='offline', chunks=len(INDEX.chunks), documents=len({c['source'] for c in INDEX.chunks}),
-                                       tasks={k: v[0] for k, v in TASKS.items()}))
+                                       tasks={k: v[0] for k, v in TASKS.items()},
+                                       generation=public_status(), corpora=['shop','lab']))
         if path == '/api/evaluate':
             return self.send(200, evaluate(INDEX))
         self.send(404, {'error': 'Not found'})
@@ -43,11 +48,28 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict):
                 raise ValueError('Expected a JSON object')
-            if self.path == '/api/ask':
+            if self.path in ('/api/ask', '/api/generate'):
+                if set(data) - {'question','corpus'}:
+                    raise ValueError('Only question and corpus are accepted')
                 q = data.get('question', '')
                 if not isinstance(q, str) or not 1 <= len(q.strip()) <= 1000:
                     raise ValueError('Question must be 1–1000 characters')
-                return self.send(200, INDEX.answer(q))
+                corpus = data.get('corpus', 'lab')
+                if not isinstance(corpus,str) or corpus not in INDICES:
+                    raise ValueError('Choose the shop or lab corpus')
+                if self.path == '/api/ask':
+                    return self.send(200, INDICES[corpus].answer(q))
+                if origin != allowed or self.headers.get('Host') != f'127.0.0.1:{self.server.server_port}':
+                    return self.send(403, {'error':'Generation requires the exact local browser origin and host'})
+                if not GENERATION_SLOTS.acquire(blocking=False):
+                    return self.send(429, {'error':'Two generation requests are already active. Try again later.','error_code':'busy'})
+                try:
+                    return self.send(200, generate(INDICES[corpus],q))
+                except GenerationError as exc:
+                    status = 503 if exc.code in ('configuration','disabled') else 504 if exc.code == 'timeout' else 413 if exc.code == 'request_size' else 502
+                    return self.send(status, {'error':str(exc),'error_code':exc.code,'mode':'no generated answer'})
+                finally:
+                    GENERATION_SLOTS.release()
             if self.path == '/api/agent':
                 return self.send(200, run_agent(INDEX, data.get('task', 'retrieval'), data.get('budget', 6)))
             if self.path == '/api/replay':

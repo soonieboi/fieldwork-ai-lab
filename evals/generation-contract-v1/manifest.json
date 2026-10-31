@@ -1,0 +1,13 @@
+{
+  "allowed_ids": [
+    "returns:1"
+  ],
+  "cases": 19,
+  "files": {
+    "cases.json": "1a1ccb8eaa9c39b7f359b0da829a37285ba96cbc21b29c09daa3626e56c8d632",
+    "response.schema.json": "ac1797b1a8353ea774e39fe8124c2c52ad327dbeae169e92ba130931fca0bf45"
+  },
+  "model_quality_assessed": false,
+  "provenance": "Authored deterministic responses; no model inference, live samples or independent judging.",
+  "version": "fieldwork-generation-contract-v1"
+}

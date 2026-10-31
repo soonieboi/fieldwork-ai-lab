@@ -134,3 +134,57 @@ profile references, and symlinks. A mutation test verifies the loader uses the
 same document bytes it hashed. Development/held-out reports reproduce byte for
 byte after refreshing evaluator-source hashes only; all scores, predictions,
 dataset hashes, labels, split membership and policy values are unchanged.
+
+## Optional cited-generation PR (#2)
+
+PR #1 was merged at `6e8256ead29bd42bd4966a597741b48f4ad6bc1e`. Its push-triggered
+post-merge CI run `41160635677` passed on Python 3.10 and 3.14 before this branch
+was created. This branch uses a separate checkout; the user's main preview stays
+on port 8080. The in-progress, explicitly offline shoe-policy preview uses 8091.
+
+Local verification: **79 tests passed** on Python 3.14.2. New tests use local
+deterministic HTTP fixtures and mocked TLS transport only; no live inference,
+model weights, private documents or paid calls were used. Coverage includes
+strict schema/citation validation, exact supplied-source provenance, no dispatch
+on local insufficiency/disabled mode, model/provider abstention, refusal types,
+truncation, redirects/no retry, errors without provider-body leakage, request and
+response limits, deadline interruption, proxy isolation, TLS verification,
+environment-only configuration, exact browser Origin/Host, forbidden browser
+configuration, and concurrency bounds. Fixture success is not model quality.
+
+The separately versioned 19-case contract suite passes, including an intentionally
+citation-valid but false claim. `scripts/check_evaluation.py` reproduces frozen
+v1 reports byte for byte; their corpus, labels, split, policy, core, and scorer
+are unchanged. The fictional shop corpus is outside that manifest.
+
+Frontend JavaScript syntax, IDs, labels, help links, default-disabled endpoint
+selection and plain-text rendering paths passed static checks. Browser automation
+became unavailable after the Mac disconnect, so the new PR #2 interface has NOT
+received a rendered-browser or narrow-screen regression check. Do not interpret
+static checks or HTTP 200 as visual verification. Both local previews respond
+over HTTP; the earlier merged-main browser search had been verified before the
+disconnect. Independent review should include the new interface when browser
+automation is available again.
+
+Generated semantic support is not assessed. A separate future review protocol is
+in `docs/generated-support-review.md`; extractive v1 metrics are never applied to
+generated paraphrases. No agent or benchmark improvements are included here.
+
+Independent review of PR #2 reproduced valid JSON accepted after premature HTTP
+EOF under an overdeclared Content-Length. The adapter now verifies declared byte
+lengths before JSON parsing, rejects duplicate/ambiguous framing headers, and
+requires complete chunk delimiters/terminal trailers. Decoder hooks are covered
+by the supported Python CI matrix. Local framing regressions cover valid
+length/close/chunked responses (including trailers), short bodies, missing zero
+chunks, incomplete terminal trailers, malformed delimiters, and invalid headers.
+The full **82-test** suite, frozen v1 report reproduction, 19 contract fixtures,
+frontend static checks, and directory secret scan pass after these corrections.
+
+Independent browser QA of the original PR #2 head verified shoe/receipt evidence,
+helmet abstention, disabled endpoint messaging, Docs navigation/reload/repeated
+clicks, existing demos, no console errors, and no page overflow at 320/390 pixels.
+It identified clipped dropdown labels at 320 pixels and a policy-specific submit
+label in the technical corpus. Visible options were shortened with full accessible
+labels and contextual descriptions, and the button now says “Find matching text.”
+The affected rendering needs a repeat check; static frontend checks alone do not
+prove the clipping correction. The main 8080 preview is unaffected.

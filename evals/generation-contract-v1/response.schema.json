@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "claims": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "citations": {
+            "items": {
+              "enum": [
+                "returns:1"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "citations"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ],
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "answer",
+        "abstain"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "reason",
+    "claims"
+  ],
+  "type": "object"
+}
