@@ -372,7 +372,7 @@
   "semantic_quality_assessed": false,
   "source_sha256": {
     "lab/agent_contracts.py": "fb7976caac70f72fdfaae22863fde6e8d1309cefdcf20401a83104d33e0b92a8",
-    "lab/model_agent.py": "5fb7fcbd3136e797757904fcd45b9f29a54a99608f905714fa7e9cd018890797"
+    "lab/model_agent.py": "b4f2500494fb3ccb5ebe6435ca6059813c918ae48765436ad7e481bfed676ed6"
   },
   "version": "fieldwork-agent-contract-v1"
 }

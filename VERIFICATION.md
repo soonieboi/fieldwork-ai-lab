@@ -225,3 +225,34 @@ Existing preview ports 8080 and 8091 are preserved. The PR #3 preview is separat
 served on 8092 with both endpoint features explicitly disabled. CritterDex port
 4317 was not used or changed. No deployment, new credentials, shell/file-write
 tools, live-agent quality claims, or serving-benchmark changes are included.
+
+### PR #3 independent-review corrections
+
+Both response-format modes now receive the full dynamic action contract in the
+trusted system message, including schema version, exact fields, inactive-field
+rules and discovered/read citation IDs. Payload assertions inspect all three
+stages; negative mutations still fail local validation, and fake HTTP checks
+verify JSON-object mode never silently switches formats. Offline accounting now
+reports zero model requests and separate scripted decisions, with no model-request
+trace events. Troubleshooting distinguishes the original four-step fixture from
+the three-choice shoe walkthrough.
+
+Independent browser QA of cd20f4a verified shoe/search/read/cite, two-choice
+exhaustion, navigation/repeated fast runs, Docs/back/links, 320/390px layouts, no
+console errors and existing RAG/replay. Those fast runs did not exercise Stop.
+The new test-only Node harness executes the actual frontend submit, Stop, poll
+and route functions using controlled pending responses and minimal DOM stubs. It
+checks cancellation acknowledgment while navigating away/back, run-cancel-run,
+late prior poll success/error, and late prior cancel responses. No stale response
+replaces the next job or resurfaces a final answer after cancellation. Existing
+Python fake-HTTP tests separately exercise a blocked in-flight provider request
+and prove no tool executes after cancellation. These are handler/server checks,
+not rendered-browser cancellation QA; actual delayed browser interaction remains
+unverified. No production delays, live inference or dependencies were added.
+
+After review corrections: **102 local tests passed** on Python 3.14.2. All frozen
+RAG and generation suites reproduce; the 23 agent per-case outcomes and fixture
+identity are byte-equivalent after excluding refreshed runtime source hashes.
+The controlled-delay frontend harness and static integrity checks pass. Gitleaks
+directory/history scans and focused staged-content checks are repeated before
+publication; these cannot prove the absence of every possible secret format.

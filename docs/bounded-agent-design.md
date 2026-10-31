@@ -53,6 +53,10 @@ a discovered source_id; finish carries 1–6 bounded cited claims; abstain has a
 nonempty bounded reason and no claims. Inactive fields must be empty. Strict
 JSON duplicate-key/type/property checks apply. json_schema/json_object capability
 selection is explicit, with the same local validation and no silent fallback.
+Both modes receive the complete serialized action schema, action-specific empty
+field rules, string bounds, and current discovered/read citation IDs in the
+trusted system message. JSON-object mode only guarantees syntax at the provider;
+the local validator still enforces the contract before any tool dispatch.
 Provider refusals and protocol/transport errors are terminal, not tool actions.
 
 ## Budgets, interruption and traces
@@ -83,7 +87,8 @@ Trace only explicit requests/actions, tool outcomes, source IDs, terminal status
 step counts, elapsed time and budget accounting. Do not expose hidden reasoning,
 raw provider errors, credentials, or endpoint configuration. Trace/model text is
 plain text in the browser. Offline fixture pacing and token allowances are not
-inference/serving metrics.
+inference/serving metrics. Offline accounting records zero model requests and
+counts scripted decisions separately; requested caps remain simulated allowances.
 
 ## Operator configuration and local jobs
 

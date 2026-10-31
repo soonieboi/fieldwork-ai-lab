@@ -137,17 +137,34 @@ SYSTEM=(
     'with a reason. Finish with 1–6 concise claims citing only read IDs. Preserve receipt and other '
     'conditions; do not infer missing purchase details. Valid citations do not establish factual truth.'
 )
+CONTRACT_MARKER='\nAction contract JSON:\n'
+ACTION_RULES={
+    'search_documents':{'nonempty':['query'],'empty_strings':['source_id','reason'],'empty_arrays':['claims']},
+    'read_source':{'nonempty':['source_id'],'source_must_be_discovered':True,
+                   'empty_strings':['query','reason'],'empty_arrays':['claims']},
+    'finish':{'empty_strings':['query','source_id'],'requires_read_evidence':True,
+              'claims_min':1,'claims_max':6,'citations_per_claim_min':1,'citations_per_claim_max':3,
+              'citations_unique':True,'citations_must_be_read_ids':True},
+    'abstain':{'nonempty':['reason'],'empty_strings':['query','source_id'],'empty_arrays':['claims']},
+}
 
 
 def request_body(config,question,observations,tools):
     context=json.dumps({'question':question,'observations':observations},ensure_ascii=True)
     if len(context.encode())>MAX_CONTEXT_BYTES:raise AgentError('context_budget')
     fmt={'type':config.response_format}
+    schema=action_schema(tools.discovered,tools.read)
     if config.response_format=='json_schema':
         fmt['json_schema']={'name':'fieldwork_agent_action_v1','strict':True,
-                            'schema':action_schema(tools.discovered,tools.read)}
+                            'schema':schema}
+    # JSON-object mode provides syntax only. Supply the same full contract to the
+    # model in both modes; local validation/dispatch remains the authority.
+    contract={'schema':schema,'action_rules':ACTION_RULES,
+              'string_bounds':{'query_max_chars':300,'source_id_max_chars':256,
+                               'reason_max_chars':500,'claim_text_max_chars':1200}}
+    instructions=SYSTEM+CONTRACT_MARKER+json.dumps(contract,ensure_ascii=True,sort_keys=True)
     value={'model':config.model,'stream':False,'n':1,'response_format':fmt,
-           config.token_field:config.max_tokens,'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':context}]}
+           config.token_field:config.max_tokens,'messages':[{'role':'system','content':instructions},{'role':'user','content':context}]}
     body=json.dumps(value,ensure_ascii=True).encode()
     if len(body)>MAX_REQUEST_BYTES:raise AgentError('context_budget')
     return body
@@ -196,7 +213,8 @@ def run_model_agent(index,question,config,budget=None,cancel=None,emit=None,prov
         event('terminal',status=status)
         return {'mode':mode+(' · no model inference' if mode!='configured_endpoint' else ' · quality unverified'),
             'status':status,'reason':reason,'claims':claims,'sources':[v for k,v in tools.read.items() if k in used],
-            'trace':trace,'limits':asdict(budget),'accounting':{'model_requests':len(usage_entries),'steps_used':calls,
+            'trace':trace,'limits':asdict(budget),'accounting':{'model_requests':0 if mode=='offline_scripted' else len(usage_entries),
+                **({'scripted_decisions':len(usage_entries)} if mode=='offline_scripted' else {}),'steps_used':calls,
                 'tools_executed':len(tools.executed),'requested_completion_token_caps':reserved,
                 'reported_completion_tokens':sum(usage_entries) if all(t is not None for t in usage_entries) else None,
                 'elapsed_ms':round(max(0,clock()-started)*1000,2)},
@@ -220,12 +238,12 @@ def run_model_agent(index,question,config,budget=None,cancel=None,emit=None,prov
             request_config=replace(config,max_tokens=min(config.max_tokens,allowance),timeout=min(config.timeout,remaining))
             body=request_body(request_config,question,observations,tools)
             calls+=1;reserved+=request_config.max_tokens
-            event('model_request',requested_cap=request_config.max_tokens)
+            event('scripted_decision' if mode=='offline_scripted' else 'model_request',requested_cap=request_config.max_tokens)
             status=stopped()
             if status:return done(status)
             usage_entries.append(None)
             completion=provider(request_config,body)
-            event('model_response')
+            event('scripted_response' if mode=='offline_scripted' else 'model_response')
             status=stopped()
             if status:return done(status)
             usage=completion.get('usage') if isinstance(completion,dict) else None

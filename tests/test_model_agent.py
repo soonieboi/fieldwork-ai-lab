@@ -16,7 +16,7 @@ from lab.agent_contracts import check,load_fixtures,run_case
 from lab.core import ROOT,Index
 from lab.generation import GenerationConfig
 from lab.model_agent import (AgentBudget,AgentError,AgentJobs,ReadOnlyTools,agent_config,agent_status,
-                             offline_choice,run_model_agent,validate_action)
+                             offline_choice,run_model_agent,validate_action,request_body,action_schema,CONTRACT_MARKER)
 from lab.server import Handler
 
 QUESTION="I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?"
@@ -116,12 +116,69 @@ class AgentRuntimeTests(unittest.TestCase):
             self.assertEqual(result['claims'][0]['citations'],['returns:1'])
             self.assertEqual(result['validation']['semantic_support'],'not_assessed')
 
+    def test_json_object_payload_contains_exact_dynamic_schema_and_action_rules(self):
+        tools=ReadOnlyTools(self.index)
+        config=GenerationConfig('http://localhost/v1','fixture',response_format='json_object')
+        for stage in ('initial','discovered','read'):
+            if stage=='discovered':tools.execute('search_documents',query='shoes')
+            if stage=='read':tools.execute('read_source',source_id='returns:1')
+            body=json.loads(request_body(config,QUESTION,[],tools))
+            self.assertEqual(body['response_format'],{'type':'json_object'})
+            self.assertEqual(body['messages'][0]['role'],'system')
+            contract=json.loads(body['messages'][0]['content'].split(CONTRACT_MARKER,1)[1])
+            schema=contract['schema']
+            self.assertEqual(schema,action_schema(tools.discovered,tools.read))
+            self.assertEqual(set(schema['required']),{'schema_version','action','query','source_id','claims','reason'})
+            self.assertFalse(schema['additionalProperties'])
+            self.assertEqual(schema['properties']['schema_version']['enum'],[1])
+            self.assertEqual(schema['properties']['source_id']['enum'],['']+sorted(tools.discovered))
+            citation=schema['properties']['claims']['items']['properties']['citations']['items']
+            if stage=='read':self.assertEqual(citation['enum'],['returns:1'])
+            else:self.assertNotIn('enum',citation)
+            self.assertEqual(contract['action_rules']['search_documents']['empty_strings'],['source_id','reason'])
+            self.assertTrue(contract['action_rules']['read_source']['source_must_be_discovered'])
+            self.assertTrue(contract['action_rules']['finish']['citations_must_be_read_ids'])
+            self.assertEqual(contract['string_bounds']['query_max_chars'],300)
+            self.assertEqual(json.loads(body['messages'][1]['content']),{'question':QUESTION,'observations':[]})
+
+    def test_payload_described_choices_still_require_exact_fields_and_citations(self):
+        tools=ReadOnlyTools(self.index);tools.execute('search_documents',query='shoes');tools.execute('read_source',source_id='returns:1')
+        body=json.loads(request_body(GenerationConfig('http://localhost/v1','fixture',response_format='json_object'),QUESTION,[],tools))
+        spec=json.loads(body['messages'][0]['content'].split(CONTRACT_MARKER,1)[1])
+        schema=spec['schema']
+        candidate={key:[] if definition['type']=='array' else '' for key,definition in schema['properties'].items()}
+        candidate.update(schema_version=schema['properties']['schema_version']['enum'][0],action='finish')
+        citation=schema['properties']['claims']['items']['properties']['citations']['items']['enum'][0]
+        candidate['claims']=[{'text':'Authored fixture claim, not a judged model answer.','citations':[citation]}]
+        self.assertEqual(validate_action(candidate,tools.read),candidate)
+        for mutation in ('missing-version','extra-property','unknown-citation','inactive-query','wrong-claims-type'):
+            value=json.loads(json.dumps(candidate))
+            if mutation=='missing-version':value.pop('schema_version')
+            elif mutation=='extra-property':value['new_tool_permission']='not allowed'
+            elif mutation=='unknown-citation':value['claims'][0]['citations']=['not-in-supplied-contract']
+            elif mutation=='inactive-query':value['query']='must be empty for finish'
+            else:value['claims']='not an array'
+            with self.subTest(mutation=mutation),self.assertRaises(AgentError):validate_action(value,tools.read)
+
+    def test_json_object_round_trips_carry_contract_without_silent_format_switch(self):
+        with endpoint() as (url,server):
+            config=agent_config(dict(ENV,LAB_AGENT_BASE_URL=url,LAB_AGENT_FORMAT='json_object'))
+            self.assertEqual(run_model_agent(self.index,QUESTION,config)['status'],'completed')
+            self.assertEqual(len(server.requests),3)
+            for body in server.requests:
+                self.assertEqual(body['response_format'],{'type':'json_object'})
+                contract=json.loads(body['messages'][0]['content'].split(CONTRACT_MARKER,1)[1])
+                self.assertIn('schema_version',contract['schema']['required'])
+            last=json.loads(server.requests[-1]['messages'][0]['content'].split(CONTRACT_MARKER,1)[1])
+            self.assertEqual(last['schema']['properties']['claims']['items']['properties']['citations']['items']['enum'],['returns:1'])
+
     def test_forbidden_choice_cannot_dispatch_a_tool_over_http(self):
-        with endpoint(forbidden=True) as (url,server):
-            result=run_model_agent(self.index,QUESTION,agent_config(dict(ENV,LAB_AGENT_BASE_URL=url)))
-            self.assertEqual(result['status'],'invalid_action')
-            self.assertEqual(result['accounting']['tools_executed'],0)
-            self.assertEqual(len(server.requests),1)
+        for format in ('json_schema','json_object'):
+            with self.subTest(format=format),endpoint(forbidden=True) as (url,server):
+                result=run_model_agent(self.index,QUESTION,agent_config(dict(ENV,LAB_AGENT_BASE_URL=url,LAB_AGENT_FORMAT=format)))
+                self.assertEqual(result['status'],'invalid_action')
+                self.assertEqual(result['accounting']['tools_executed'],0)
+                self.assertEqual(len(server.requests),1)
 
     def test_offline_walkthrough_never_calls_transport_or_claims_inference(self):
         with patch('lab.model_agent.post_completion') as post:
@@ -130,6 +187,9 @@ class AgentRuntimeTests(unittest.TestCase):
             post.assert_not_called()
         self.assertEqual(result['status'],'completed')
         self.assertIn('no model inference',result['mode'])
+        self.assertEqual(result['accounting']['model_requests'],0)
+        self.assertEqual(result['accounting']['scripted_decisions'],3)
+        self.assertFalse(any(row['phase']=='model_request' for row in result['trace']))
         self.assertIsNone(result['accounting']['reported_completion_tokens'])
         self.assertEqual(result['claims'][0]['text'],self.index.chunks[0]['text'])
 
@@ -138,7 +198,8 @@ class AgentRuntimeTests(unittest.TestCase):
         with patch('lab.model_agent.post_completion') as post:
             result=run_model_agent(index,'shoes',GenerationConfig('http://localhost/v1','fixture'),provider=offline_choice,mode='offline_scripted')
             self.assertEqual(result['status'],'context_budget')
-            self.assertEqual(result['accounting']['model_requests'],2)
+            self.assertEqual(result['accounting']['model_requests'],0)
+            self.assertEqual(result['accounting']['scripted_decisions'],2)
             self.assertEqual(result['accounting']['tools_executed'],1)
             post.assert_not_called()
 
