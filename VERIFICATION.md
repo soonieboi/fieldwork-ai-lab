@@ -302,3 +302,51 @@ The separate PR4 preview is on 8093 with every endpoint opt-in disabled. Ports
 8080/8091/8092 remain healthy; CritterDex 4317 was not touched. OS-managed DNS may
 outlast network deadlines. Local development serving is not authenticated public
 hosting. Prompt-slice rates use their own subwindows and must not be added.
+
+## Final verification/boundaries — PR #5
+
+PR #4 merged at `d795723ec98b2b5948678cb92f4bea340aee5837`; post-merge CI
+`41169463670` passed before implementation. Audit/scope design was committed
+first at `509fa8b`. Existing reviewed transport/tool/evaluation logic is preserved;
+no frozen corpus, policy, scorer, contract fixture or report changed.
+
+**127 local Python tests passed**, then all 127 passed again in a child process
+with HTTP/HTTPS/ALL proxy variables pointing to an unusable local port and empty
+NO_PROXY. No persistent user proxy settings or global urllib opener were changed.
+Local route clients use explicit no-proxy openers; only legacy-adapter fake-server
+tests mock proxy discovery temporarily. CI repeats the hostile-proxy environment.
+Nine new boundary tests cover Host/target pinning, ambiguous/duplicate framing,
+request size/encoding/Expect, duplicate/nonfinite/malformed JSON, short/slow body
+rejection before dispatch, finite body read, sanitized errors, response headers,
+exact bundled-script CSP hash, arbitrary-file absence and loopback binding.
+
+All frozen RAG reports, 19 generation contracts, 23 agent contracts/artifact and
+the synthetic serving report reproduce unchanged. Frontend syntax/IDs/links and
+controlled-delay agent handler tests pass. The new pinned-scanner script detects
+a generated nonfunctional dummy token via its expected rule, then scans a tracked
+snapshot and full available history with forced redaction. No scanner allowlist
+suppresses findings. The CI Linux binary checksum came from official release
+metadata; actions are commit-pinned and browser dependencies are exact/integrity
+locked from the official npm registry. No browser/dependency install was performed
+on the Mac beyond generating the package lockfile. Chromium installation and
+Playwright execution are confined to the disposable CI browser job.
+
+Manual Chrome checks under the actual CSP passed everyday receipt evidence,
+unsupported-item abstention, offline bounded search/read/cite, legacy replay,
+synthetic batch, security Docs/repeated links/reload/back, and readable 320/390px
+layouts without page overflow. No console warnings/errors were observed. The
+temporary viewport was reset. Automated CI browser outcomes are recorded in the
+PR checks after publication, not inferred from these manual/static checks.
+
+The threat model in `docs/threat-model.md` distinguishes local safeguards from
+authentication/DoS/production isolation and documents weaker preserved legacy
+benchmark proxy/per-read/plain-HTTP behavior separately from reviewed adapters.
+No public hosting, tunnel, authentication service, persistent access change,
+provider credentials, private-data transmission, live model call or paid run was
+added. Secret scanning is not exhaustive and fixture success is not model quality.
+
+PR5 preview is separate on 8094 with all endpoint opt-ins disabled. Existing
+8080/8091/8092/8093 previews and CritterDex are preserved. Independent review is
+required before merging this final draft; no further roadmap implementation is
+started. Remaining live model support review, agent competence/injection evaluation
+and real hardware benchmarks require authorized user access/data/spend.

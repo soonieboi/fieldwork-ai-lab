@@ -1,6 +1,6 @@
 # Final verification/boundary scope — PR5
 
-Base PR4 merge d795723ec98b2b5948678cb92f4bea340aee5837. Existing reviewed
+Base PR4 merge d795723ec98b2b5948678cb92f4bea340aee5837. Existing reviewed generation/agent/new-serving
 transport already enforces HTTPS outside loopback, TLS verification, no proxy/
 redirect/retry, bounded framing/body/deadline checks. Existing model adapters have
 separate opt-ins/credentials and no browser-selected endpoints. Agent tools,

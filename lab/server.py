@@ -1,18 +1,41 @@
 import json
+import base64
+import hashlib
+import re
+import socket
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from .core import ROOT, TASKS, Index, evaluate, replay, run_agent
-from .generation import GenerationError, generate, public_status
+from .generation import GenerationError, generate, public_status, strict_json
 from .model_agent import AgentBudget,AgentError,AgentJobs,agent_status
 
 INDEX = Index()
 INDICES = {'lab': INDEX, 'shop': Index(ROOT/'examples/shop')}
 GENERATION_SLOTS = threading.BoundedSemaphore(2)
 AGENT_JOBS = AgentJobs()
+BODY_TIMEOUT = 5
 
 
 class Handler(BaseHTTPRequestHandler):
+    def setup(self):
+        super().setup()
+        self.connection.settimeout(5)
+
+    def parse_request(self):
+        if not super().parse_request():return False
+        hosts=self.headers.get_all('Host',[])
+        if hosts != [f'127.0.0.1:{self.server.server_port}']:
+            self.send(403,{'error':'Use the exact local host and port'})
+            return False
+        if not self.path.startswith('/') or self.path.startswith('//'):
+            self.send(400,{'error':'Use a local origin-form request target'})
+            return False
+        return True
+
+    def send_error(self,code,message=None,explain=None):
+        self.send(code,{'error':'Request rejected'})
+
     def send(self, status, body, content_type='application/json'):
         payload = json.dumps(body).encode() if content_type == 'application/json' else body
         self.send_response(status)
@@ -20,8 +43,17 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(payload)))
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Cache-Control', 'no-store')
+        scripts=re.findall(rb'<script>(.*?)</script>',payload,re.S) if content_type=='text/html' else []
+        hashes=' '.join("'sha256-"+base64.b64encode(hashlib.sha256(script).digest()).decode()+"'" for script in scripts)
+        self.send_header('Content-Security-Policy',"default-src 'none'; script-src "+(hashes or "'none'")+"; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'")
+        self.send_header('X-Frame-Options','DENY')
+        self.send_header('Referrer-Policy','no-referrer')
+        self.send_header('Cross-Origin-Resource-Policy','same-origin')
+        self.send_header('Permissions-Policy','camera=(), microphone=(), geolocation=()')
+        self.send_header('Connection','close')
+        self.close_connection=True
         self.end_headers()
-        self.wfile.write(payload)
+        if self.command!='HEAD':self.wfile.write(payload)
 
     def do_GET(self):
         path = urlsplit(self.path).path
@@ -39,15 +71,34 @@ class Handler(BaseHTTPRequestHandler):
         # Only same-origin JSON requests; no browser-selected network endpoints.
         origin = self.headers.get('Origin')
         allowed = f'http://127.0.0.1:{self.server.server_port}'
-        if origin and origin != allowed:
+        if len(self.headers.get_all('Origin',[]))>1 or (origin and origin != allowed):
             return self.send(403, {'error': 'Origin rejected'})
         try:
-            size = int(self.headers.get('Content-Length', '0'))
+            lengths=self.headers.get_all('Content-Length',[])
+            if (len(lengths)!=1 or self.headers.get_all('Transfer-Encoding',[]) or
+                len(lengths[0])>5 or not lengths[0].isascii() or not lengths[0].isdigit()):
+                raise ValueError('Use one valid Content-Length and no Transfer-Encoding')
+            size = int(lengths[0])
             if not 0 < size <= 8192:
                 raise ValueError('Request must be 1–8192 bytes')
-            if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
+            if (len(self.headers.get_all('Content-Type',[]))!=1 or self.headers.get('Content-Type', '').split(';')[0].strip() != 'application/json'):
                 raise ValueError('Use application/json')
-            data = json.loads(self.rfile.read(size))
+            if self.headers.get_all('Expect',[]):
+                return self.send(417,{'error':'Expect is not supported'})
+            if self.headers.get_all('Content-Encoding',[]) not in ([],['identity']):
+                raise ValueError('Compressed request bodies are not supported')
+            expired=threading.Event()
+            def interrupt_body():
+                expired.set()
+                try:self.connection.shutdown(socket.SHUT_RD)
+                except OSError:pass
+            timer=threading.Timer(BODY_TIMEOUT,interrupt_body);timer.daemon=True;timer.start()
+            try:raw=self.rfile.read(size)
+            finally:timer.cancel()
+            if expired.is_set():return self.send(408,{'error':'Request body deadline exceeded'})
+            if len(raw)!=size:raise ValueError('Incomplete request body')
+            try:data=strict_json(raw)
+            except GenerationError:raise ValueError('Use valid UTF-8 JSON with unique keys and finite numbers') from None
             if not isinstance(data, dict):
                 raise ValueError('Expected a JSON object')
             if self.path in ('/api/model-agent/start','/api/model-agent/status','/api/model-agent/cancel'):
@@ -100,6 +151,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send(404, {'error': 'Not found'})
         except (ValueError, TypeError) as exc:
             self.send(400, {'error': str(exc)})
+        except (TimeoutError,socket.timeout):
+            self.send(408,{'error':'Request body deadline exceeded'})
 
 
 def serve(port=8080):
