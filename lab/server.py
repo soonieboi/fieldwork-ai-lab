@@ -4,10 +4,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from .core import ROOT, TASKS, Index, evaluate, replay, run_agent
 from .generation import GenerationError, generate, public_status
+from .model_agent import AgentBudget,AgentError,AgentJobs,agent_status
 
 INDEX = Index()
 INDICES = {'lab': INDEX, 'shop': Index(ROOT/'examples/shop')}
 GENERATION_SLOTS = threading.BoundedSemaphore(2)
+AGENT_JOBS = AgentJobs()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -28,7 +30,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/api/status':
             return self.send(200, dict(mode='offline', chunks=len(INDEX.chunks), documents=len({c['source'] for c in INDEX.chunks}),
                                        tasks={k: v[0] for k, v in TASKS.items()},
-                                       generation=public_status(), corpora=['shop','lab']))
+                                       generation=public_status(),model_agent=agent_status(),corpora=['shop','lab']))
         if path == '/api/evaluate':
             return self.send(200, evaluate(INDEX))
         self.send(404, {'error': 'Not found'})
@@ -48,6 +50,23 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict):
                 raise ValueError('Expected a JSON object')
+            if self.path in ('/api/model-agent/start','/api/model-agent/status','/api/model-agent/cancel'):
+                if origin != allowed or self.headers.get('Host') != f'127.0.0.1:{self.server.server_port}':
+                    return self.send(403, {'error':'Agent jobs require the exact local browser origin and host'})
+                try:
+                    if self.path.endswith('/start'):
+                        if set(data)-{'question','corpus','mode','max_steps','max_seconds','max_requested_tokens'}:
+                            raise ValueError('Unexpected agent job parameter')
+                        corpus=data.get('corpus','shop')
+                        if not isinstance(corpus,str) or corpus not in INDICES:raise ValueError('Choose shop or lab documents')
+                        budget=AgentBudget(**{k:data[k] for k in ('max_steps','max_seconds','max_requested_tokens') if k in data})
+                        return self.send(200,AGENT_JOBS.start(INDICES[corpus],data.get('question',''),data.get('mode','offline'),budget))
+                    if set(data)!={'id'} or not isinstance(data['id'],str) or len(data['id'])!=32 or any(c not in '0123456789abcdef' for c in data['id']):
+                        raise ValueError('Expected a local job ID')
+                    return self.send(200,AGENT_JOBS.request_cancel(data['id']) if self.path.endswith('/cancel') else AGENT_JOBS.snapshot(data['id']))
+                except AgentError as exc:
+                    status=503 if exc.code in ('configuration','disabled') else 429 if exc.code=='busy' else 404 if exc.code=='not_found' else 400
+                    return self.send(status,{'error':str(exc),'error_code':exc.code})
             if self.path in ('/api/ask', '/api/generate'):
                 if set(data) - {'question','corpus'}:
                     raise ValueError('Only question and corpus are accepted')

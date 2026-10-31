@@ -1,0 +1,378 @@
+{
+  "fixture_manifest_sha256": "4aea0a0643400225489a307eb2fd7c0f4fd1a28db3f717f666ca68e2a8bc1560",
+  "results": [
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 3,
+        "reported_completion_tokens": 12,
+        "requested_completion_token_caps": 384,
+        "steps_used": 3,
+        "tools_executed": 2
+      },
+      "id": "search-read-finish",
+      "request_count": 3,
+      "semantic_quality": "not_assessed",
+      "status": "completed",
+      "tools": [
+        "search_documents",
+        "read_source"
+      ]
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 4,
+        "reported_completion_tokens": 16,
+        "requested_completion_token_caps": 512,
+        "steps_used": 4,
+        "tools_executed": 3
+      },
+      "id": "refine-search",
+      "request_count": 4,
+      "semantic_quality": "not_assessed",
+      "status": "completed",
+      "tools": [
+        "search_documents",
+        "search_documents",
+        "read_source"
+      ]
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "early-abstain",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "abstained",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "forbidden-tool",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "undiscovered-source",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "finish-without-read",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 3,
+        "reported_completion_tokens": 12,
+        "requested_completion_token_caps": 384,
+        "steps_used": 3,
+        "tools_executed": 2
+      },
+      "id": "invalid-finish-citation",
+      "request_count": 3,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": [
+        "search_documents",
+        "read_source"
+      ]
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "oversize-query",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "inactive-fields",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "boolean-version",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "malformed-response",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "invalid_action",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 2,
+        "reported_completion_tokens": 8,
+        "requested_completion_token_caps": 256,
+        "steps_used": 2,
+        "tools_executed": 2
+      },
+      "id": "step-exhaustion",
+      "request_count": 2,
+      "semantic_quality": "not_assessed",
+      "status": "step_budget",
+      "tools": [
+        "search_documents",
+        "search_documents"
+      ]
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 1
+      },
+      "id": "requested-token-exhaustion",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "token_budget",
+      "tools": [
+        "search_documents"
+      ]
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 3,
+        "reported_completion_tokens": null,
+        "requested_completion_token_caps": 384,
+        "steps_used": 3,
+        "tools_executed": 2
+      },
+      "id": "missing-reported-usage",
+      "request_count": 3,
+      "semantic_quality": "not_assessed",
+      "status": "completed",
+      "tools": [
+        "search_documents",
+        "read_source"
+      ]
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": null,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "reported-cap-violation",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "usage_error",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 0,
+        "reported_completion_tokens": 0,
+        "requested_completion_token_caps": 0,
+        "steps_used": 0,
+        "tools_executed": 0
+      },
+      "id": "cancel-before-request",
+      "request_count": 0,
+      "semantic_quality": "not_assessed",
+      "status": "cancelled",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": null,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "cancel-after-response",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "cancelled",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": 4,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "cancel-before-tool",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "cancelled",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 3000.0,
+        "model_requests": 1,
+        "reported_completion_tokens": null,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "deadline-before-tool",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "time_budget",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": null,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "provider-refusal",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "provider_refused",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 1,
+        "reported_completion_tokens": null,
+        "requested_completion_token_caps": 128,
+        "steps_used": 1,
+        "tools_executed": 0
+      },
+      "id": "provider-transport-error",
+      "request_count": 1,
+      "semantic_quality": "not_assessed",
+      "status": "provider_error",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 0,
+        "reported_completion_tokens": 0,
+        "requested_completion_token_caps": 0,
+        "steps_used": 0,
+        "tools_executed": 0
+      },
+      "id": "insufficient-original-question",
+      "request_count": 0,
+      "semantic_quality": "not_assessed",
+      "status": "insufficient_evidence",
+      "tools": []
+    },
+    {
+      "accounting": {
+        "elapsed_ms": 0,
+        "model_requests": 3,
+        "reported_completion_tokens": 12,
+        "requested_completion_token_caps": 384,
+        "steps_used": 3,
+        "tools_executed": 2
+      },
+      "id": "contract-valid-false-claim",
+      "request_count": 3,
+      "semantic_quality": "not_assessed",
+      "status": "completed",
+      "tools": [
+        "search_documents",
+        "read_source"
+      ]
+    }
+  ],
+  "scope": "Authored scripted choices over an invented policy; no live agent, human/model judge, private input or quality study.",
+  "semantic_quality_assessed": false,
+  "source_sha256": {
+    "lab/agent_contracts.py": "fb7976caac70f72fdfaae22863fde6e8d1309cefdcf20401a83104d33e0b92a8",
+    "lab/model_agent.py": "b4f2500494fb3ccb5ebe6435ca6059813c918ae48765436ad7e481bfed676ed6"
+  },
+  "version": "fieldwork-agent-contract-v1"
+}

@@ -50,6 +50,12 @@ These examples live in `examples/shop/`, separately from the frozen v1 eval corp
   with selectable tasks and a 1–6 step budget. Roles execute sequentially.
   Only corpus search and term-coverage checks are available. No shell, network,
   file writes, autonomous migration, or real LLM reasoning.
+- **Bounded structured-choice agent:** a separate everyday walkthrough quotes the
+  invented shop policy. Its optional endpoint mode lets a model choose search,
+  read, finish or abstain. Runtime tool permissions, discovered-source IDs,
+  step/time/requested-output caps, cancellation and bounded local jobs are enforced.
+  Completion means a workflow contract, not verified factual or live-agent quality.
+  The original deterministic agent remains unchanged.
 - **Serving:** synthetic local stream replay plus a real OpenAI-compatible SSE
   adapter for an endpoint you explicitly choose. Replay results reflect fixture
   delays, never model performance. The real adapter measures TTFT, mean interval
@@ -71,6 +77,7 @@ python3 -m lab agent --task retrieval --budget 3
 python3 -m lab evaluate
 python3 scripts/check_evaluation.py
 python3 scripts/check_generation_contract.py
+python3 scripts/check_agent_contract.py
 python3 -m lab eval-suite --split development --output results/development.json
 python3 -m lab eval-suite --split heldout --output results/heldout.json
 python3 -m lab replay
@@ -138,6 +145,47 @@ The 19 authored generation contract cases include a citation-valid but false
 claim: protocol validity is intentionally not presented as semantic correctness.
 Frozen v1 scores/reports are unchanged; generated paraphrases are never scored
 with extractive token offsets. Real-model quality remains unverified.
+
+## Bounded agent walkthrough and optional model choices
+
+In the Agents tab, the default offline walkthrough uses scripted actions and
+quotes a read paragraph. It makes no endpoint request. The optional model mode
+chooses one schema-validated action per turn; only in-memory `search_documents`
+and `read_source` can execute. Read accepts only a source discovered in that run.
+No shell, arbitrary path, file write, network tool or new tool permission exists.
+
+```sh
+python3 -m lab agent-run "I bought a pair of shoes 10 days ago and haven't worn them. Can I return them?" --mode offline --corpus shop
+```
+
+The original `python3 -m lab agent --task safety` fixture is still available.
+For model-driven choices, separately configure `LAB_AGENT_ENABLED=1`,
+`LAB_AGENT_BASE_URL`, `LAB_AGENT_MODEL`, and (if needed) `LAB_AGENT_API_KEY` privately.
+No generation or benchmark key is borrowed. The `LAB_AGENT_FORMAT`, `TIMEOUT`,
+`MAX_TOKENS` and `TOKEN_FIELD` settings use the same reviewed transport/capability
+rules as generation. Choose `--mode endpoint` only with an authorized destination
+and data; requests include the question and accumulated tool observations.
+
+Defaults are 6 choices, 15 seconds, and 1536 cumulative requested completion-token
+caps. Use `--max-steps` (1–8), `--seconds` (2–30), and `--output-budget` (1–2048)
+to choose smaller bounded runs. Per-choice output cap defaults to 256. Caps are
+reserved before requests and not refunded on failure; they are not measured
+model tokens or a guaranteed billing limit. Missing reported usage stays unknown.
+Input/context is byte bounded, not counted with an assumed tokenizer.
+
+Stop run requests server-side cancellation and waits for acknowledgment after any
+current bounded request. It does not merely abort fetch. CLI Ctrl-C interrupts
+the local run. There are at most two active and eight retained local jobs, no
+unbounded queue or persistent job files, and no multi-user authentication. Keep
+the development server on loopback. DNS can outlast network deadlines.
+
+The [pre-code design](docs/bounded-agent-design.md) and
+[scoped workflow evaluation](docs/agent-evaluation-v1.md) distinguish runtime
+contracts from factual/task quality. The 23 frozen authored workflows include
+forbidden tools, undiscovered IDs, budgets, cancellation, errors, and a
+citation-valid false claim. Fake HTTP round trips verify dynamic choices drive
+actual safe-tool dispatch. No live-agent competence or general injection safety
+is claimed, and frozen v1 RAG plus generation contract artifacts remain unchanged.
 
 ## Optional real endpoint / vLLM
 

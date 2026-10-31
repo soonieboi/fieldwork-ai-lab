@@ -24,5 +24,9 @@ jobs:
         run: python scripts/check_evaluation.py
       - name: Generation contract fixtures (no model inference or quality score)
         run: python scripts/check_generation_contract.py
+      - name: Agent workflow contract fixtures (no live agent quality score)
+        run: python scripts/check_agent_contract.py
       - name: Static frontend integrity and syntax (not a browser test)
         run: python scripts/check_frontend.py
+      - name: Controlled-delay frontend job state tests (not rendering)
+        run: node scripts/check_agent_ui.js
