@@ -169,3 +169,22 @@ automation is available again.
 Generated semantic support is not assessed. A separate future review protocol is
 in `docs/generated-support-review.md`; extractive v1 metrics are never applied to
 generated paraphrases. No agent or benchmark improvements are included here.
+
+Independent review of PR #2 reproduced valid JSON accepted after premature HTTP
+EOF under an overdeclared Content-Length. The adapter now verifies declared byte
+lengths before JSON parsing, rejects duplicate/ambiguous framing headers, and
+requires complete chunk delimiters/terminal trailers. Decoder hooks are covered
+by the supported Python CI matrix. Local framing regressions cover valid
+length/close/chunked responses (including trailers), short bodies, missing zero
+chunks, incomplete terminal trailers, malformed delimiters, and invalid headers.
+The full **82-test** suite, frozen v1 report reproduction, 19 contract fixtures,
+frontend static checks, and directory secret scan pass after these corrections.
+
+Independent browser QA of the original PR #2 head verified shoe/receipt evidence,
+helmet abstention, disabled endpoint messaging, Docs navigation/reload/repeated
+clicks, existing demos, no console errors, and no page overflow at 320/390 pixels.
+It identified clipped dropdown labels at 320 pixels and a policy-specific submit
+label in the technical corpus. Visible options were shortened with full accessible
+labels and contextual descriptions, and the button now says “Find matching text.”
+The affected rendering needs a repeat check; static frontend checks alone do not
+prove the clipping correction. The main 8080 preview is unaffected.

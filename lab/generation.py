@@ -183,6 +183,47 @@ def make_request(config, question, sources):
     return encoded
 
 
+class StrictHTTPResponse(http.client.HTTPResponse):
+    """Fail closed on chunk framing where stdlib permits an EOF trailer.
+
+    These decoder hooks are covered on the supported Python CI versions.
+    Trailer contents are discarded, never treated as application evidence.
+    """
+    def _read_next_chunk_size(self):
+        line = self.fp.readline(8193)
+        if len(line) > 8192:
+            raise http.client.LineTooLong('chunk size')
+        size = line[:-2].split(b';',1)[0] if line.endswith(b'\r\n') else b''
+        if not size or any(c not in b'0123456789abcdefABCDEF' for c in size):
+            raise http.client.IncompleteRead(b'')
+        return int(size,16)
+
+    def _get_chunk_left(self):
+        left = self.chunk_left
+        if not left:
+            if left is not None and self._safe_read(2) != b'\r\n':
+                raise http.client.IncompleteRead(b'')
+            left = self._read_next_chunk_size()
+            if left == 0:
+                self._read_and_discard_trailer()
+                self._close_conn()
+                left = None
+            self.chunk_left = left
+        return left
+
+    def _read_and_discard_trailer(self):
+        total = 0
+        while True:
+            line = self.fp.readline(8193)
+            total += len(line)
+            if len(line) > 8192 or total > 16384:
+                raise http.client.LineTooLong('trailer')
+            if line == b'\r\n':
+                return
+            if not line.endswith(b'\r\n') or b':' not in line[:-2]:
+                raise http.client.IncompleteRead(b'')
+
+
 def post_completion(config, body):
     """Direct connection: no proxy inheritance, redirects, retries or TLS bypass."""
     p = urlsplit(config.base_url)
@@ -190,6 +231,7 @@ def post_completion(config, body):
     connection = (http.client.HTTPSConnection(p.hostname, p.port, timeout=config.timeout,
                     context=ssl.create_default_context()) if p.scheme == 'https' else
                   http.client.HTTPConnection(p.hostname, p.port, timeout=config.timeout))
+    connection.response_class = StrictHTTPResponse
     timer = None
     response = None
     expired = threading.Event()
@@ -223,14 +265,17 @@ def post_completion(config, body):
         if (response.getheader('Content-Type','').split(';')[0].strip().lower() != 'application/json'
             or response.getheader('Content-Encoding','identity').lower() != 'identity'):
             raise GenerationError('protocol')
-        length = response.getheader('Content-Length')
-        if length is not None:
-            try:
-                size = int(length)
-            except ValueError:
-                raise GenerationError('protocol') from None
-            if size < 0:
+        lengths = [v.strip() for k,v in response.getheaders() if k.lower() == 'content-length']
+        encodings = [v.strip().lower() for k,v in response.getheaders() if k.lower() == 'transfer-encoding']
+        if len(lengths) > 1 or len(encodings) > 1 or (lengths and encodings):
+            raise GenerationError('protocol')
+        size = None
+        if encodings and (encodings != ['chunked'] or response.chunked is not True):
+            raise GenerationError('protocol')
+        if lengths:
+            if not lengths[0].isascii() or not lengths[0].isdigit() or len(lengths[0]) > 10:
                 raise GenerationError('protocol')
+            size = int(lengths[0])
             if size > MAX_RESPONSE_BYTES:
                 raise GenerationError('response_size')
         content = bytearray()
@@ -245,11 +290,15 @@ def post_completion(config, body):
                 raise GenerationError('response_size')
         if expired.is_set():
             raise GenerationError('timeout')
+        if size is not None and len(content) != size:
+            raise GenerationError('incomplete')
         return strict_json(bytes(content))
     except GenerationError:
         raise
     except (TimeoutError, socket.timeout):
         raise GenerationError('timeout') from None
+    except http.client.IncompleteRead:
+        raise GenerationError('timeout' if expired.is_set() else 'incomplete') from None
     except (OSError, http.client.HTTPException, UnicodeError):
         raise GenerationError('timeout' if expired.is_set() else 'transport') from None
     finally:

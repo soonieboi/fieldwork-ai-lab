@@ -23,6 +23,7 @@ ENV={'LAB_GENERATION_ENABLED':'1','LAB_GENERATION_MODEL':'deterministic-fixture-
 
 
 class FakeEndpoint(BaseHTTPRequestHandler):
+    protocol_version='HTTP/1.1'
     def log_message(self,*args):
         pass
 
@@ -34,7 +35,9 @@ class FakeEndpoint(BaseHTTPRequestHandler):
             {'text':'The time and condition requirements fit; you still need a receipt.','citations':[evidence[0]['id']]}]}
         scenario=self.server.scenario
         message={'role':'assistant','content':json.dumps(payload)}
-        status=200;headers={'Content-Type':'application/json'}
+        self.close_connection=True
+        status=200;headers={'Content-Type':'application/json','Connection':'close'}
+        extra_headers=[]
         if scenario=='unknown-citation':
             payload['claims'][0]['citations']=['not-supplied:99'];message['content']=json.dumps(payload)
         if scenario=='model-abstain':
@@ -59,8 +62,32 @@ class FakeEndpoint(BaseHTTPRequestHandler):
             headers['Content-Length']=str(MAX_RESPONSE_BYTES+1)
         elif scenario=='body-oversize':
             raw=b'x'*(MAX_RESPONSE_BYTES+1)
+        elif scenario=='valid-length':
+            headers['Content-Length']=str(len(raw))
+        elif scenario=='short-length-body':
+            headers['Content-Length']=str(len(raw)+100)
+        elif scenario=='duplicate-length':
+            headers['Content-Length']=str(len(raw));extra_headers=[('Content-Length',str(len(raw)))]
+        elif scenario=='signed-length':
+            headers['Content-Length']='+'+str(len(raw))
+        elif scenario=='long-numeric-length':
+            headers['Content-Length']='0'*5000
+        if 'chunked' in scenario:
+            headers['Transfer-Encoding']='chunked'
+            if scenario=='chunked-and-length':headers['Content-Length']=str(len(raw))
+            if scenario=='chunked-short-body':
+                raw=f'{len(raw)+100:x}\r\n'.encode()+raw
+            else:
+                split=len(raw)//2
+                raw=b''.join(f'{len(part):x}\r\n'.encode()+part+b'\r\n' for part in (raw[:split],raw[split:]))
+                if scenario=='chunked-missing-zero':pass
+                elif scenario=='chunked-missing-trailer-end':raw+=b'0\r\n'
+                elif scenario=='valid-chunked-trailer':raw+=b'0\r\nX-Demo: fixture\r\n\r\n'
+                elif scenario=='chunked-bad-delimiter':raw=raw[:-2]+b'XX0\r\n\r\n'
+                else:raw+=b'0\r\n\r\n'
         self.send_response(status)
         for name,value in headers.items():self.send_header(name,value)
+        for name,value in extra_headers:self.send_header(name,value)
         self.end_headers()
         if scenario=='slow':time.sleep(1.5)
         try:self.wfile.write(raw)
@@ -183,6 +210,27 @@ class GenerationIntegrationTests(unittest.TestCase):
             self.assertEqual(error.exception.code,'timeout')
             self.assertLess(time.monotonic()-started,2.5)
 
+    def test_valid_length_close_delimited_and_chunked_responses(self):
+        for scenario in ['valid','valid-length','valid-chunked','valid-chunked-trailer']:
+            with self.subTest(scenario=scenario),fake_endpoint(scenario) as (url,server):
+                self.assertEqual(generate(self.index,QUESTION,dict(ENV,LAB_GENERATION_BASE_URL=url))['status'],'answer')
+
+    def test_valid_json_is_not_accepted_from_incomplete_framing(self):
+        for scenario in ['short-length-body','chunked-short-body','chunked-missing-zero',
+                         'chunked-missing-trailer-end','chunked-bad-delimiter']:
+            with self.subTest(scenario=scenario),fake_endpoint(scenario) as (url,server):
+                with self.assertRaises(GenerationError) as error:
+                    generate(self.index,QUESTION,dict(ENV,LAB_GENERATION_BASE_URL=url))
+                self.assertEqual(error.exception.code,'incomplete')
+                self.assertEqual(len(server.requests),1)
+
+    def test_ambiguous_or_invalid_framing_headers_are_rejected(self):
+        for scenario in ['duplicate-length','signed-length','long-numeric-length','chunked-and-length']:
+            with self.subTest(scenario=scenario),fake_endpoint(scenario) as (url,server):
+                with self.assertRaises(GenerationError) as error:
+                    generate(self.index,QUESTION,dict(ENV,LAB_GENERATION_BASE_URL=url))
+                self.assertEqual(error.exception.code,'protocol')
+
     def test_oversized_context_is_rejected_before_network(self):
         index=Index(documents={'long.md':'word '*80+'a'*25000})
         with patch('lab.generation.post_completion') as post:
@@ -206,6 +254,7 @@ class GenerationIntegrationTests(unittest.TestCase):
         with patch('lab.generation.http.client.HTTPSConnection') as factory:
             conn=factory.return_value;response=conn.getresponse.return_value;response.status=200
             response.getheader.side_effect=lambda name,default=None:{'Content-Type':'application/json'}.get(name,default)
+            response.getheaders.return_value=[('Content-Type','application/json')]
             response.read1.side_effect=[content,b'']
             post_completion(GenerationConfig('https://example.invalid/v1','fixture',api_key='PLACEHOLDER_ONLY'),b'{}')
             context=factory.call_args.kwargs['context']

@@ -103,7 +103,7 @@ export LAB_GENERATION_FORMAT=json_schema
 python3 -m lab serve --port 8081
 ```
 
-Open the matching localhost URL, choose **Configured endpoint**, and submit a
+Open the matching localhost URL, choose **Endpoint (optional)**, and submit a
 question; or use the CLI with the same environment:
 
 ```sh

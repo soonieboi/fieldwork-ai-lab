@@ -90,6 +90,14 @@ existing offline routes remain compatible. These checks are not user
 authentication. The stdlib development server remains loopback-only, unsuitable
 for public hosting, and does not claim multi-user isolation or a spend budget.
 
+Independent-review transport refinement: verify Content-Length byte counts and
+complete chunk framing before JSON parsing. Reject premature EOF even when the
+received prefix forms a valid completion, duplicate Content-Length fields,
+unsupported transfer codings, and simultaneous length/transfer-encoding headers.
+Valid close-delimited, length-delimited, and chunked replies (with bounded complete
+trailers) remain supported. Strict stdlib decoder hooks require regression checks
+on supported Python versions when upgrading.
+
 ## Testing and evaluation scope
 
 Keep evals/v1, evals/reports/v1-*, lab/core.py, lab/abstention.py and its policy,
