@@ -188,3 +188,40 @@ label in the technical corpus. Visible options were shortened with full accessib
 labels and contextual descriptions, and the button now says “Find matching text.”
 The affected rendering needs a repeat check; static frontend checks alone do not
 prove the clipping correction. The main 8080 preview is unaffected.
+
+## Bounded model-agent PR (#3)
+
+PR #2 merged at `27875cc733ce9f2a4cd48ac489ca5c7bdcf41642`; its post-merge CI
+`41163223662` passed Python 3.10/3.14 before this isolated checkout was created.
+The pre-code design is in `docs/bounded-agent-design.md`; the 23 authored agent
+workflow fixtures were committed before runtime implementation. They are public
+scripted contract regressions, not a live-agent quality study or blind split.
+
+Local full suite: **99 tests passed** on Python 3.14.2. New checks cover runtime
+allowlist enforcement independently of schema, discovered/read source provenance,
+step/time/requested-output limits, malformed/forbidden choices, false-but-valid
+negative control, missing/invalid reported usage, provider refusal/errors,
+cancellation before requests/after responses/before tools, actual fake HTTP
+search/read/finish round trips, in-flight server-side cancellation, active-job
+capacity, retention eviction, endpoint opt-in/origin/body restrictions and the
+preserved offline walkthrough. No live models or paid calls were used.
+
+The per-case scripted report is `evals/agent-reports/v1-scripted.json`. Its fixture
+inventory and hashes are validated, and the reported manifest identity comes from
+the exact loaded snapshot. `scripts/check_agent_contract.py` reproduces it.
+Frozen RAG-v1 reports and all generation contract fixtures remain unchanged and
+pass their reproduction checks. They are not pooled with agent outcomes.
+
+Frontend static checks pass. Polling/cancellation responses are keyed to their
+job so stale responses cannot overwrite a later run, and Stop is disabled until
+a job ID is known. Stop requests wait for terminal acknowledgment. A failed
+start response is reported as an uncertain job outcome, not a confirmed stop.
+Rendered-browser QA is still pending because the browser automation tool is not
+available to this execution context after disconnection. Static/HTTP tests are
+not visual verification; independent review should check the new agent controls,
+trace, job cancellation, repeated starts, Docs and 320/390px layouts.
+
+Existing preview ports 8080 and 8091 are preserved. The PR #3 preview is separately
+served on 8092 with both endpoint features explicitly disabled. CritterDex port
+4317 was not used or changed. No deployment, new credentials, shell/file-write
+tools, live-agent quality claims, or serving-benchmark changes are included.
