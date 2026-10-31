@@ -40,7 +40,9 @@ window (earliest measured worker start through latest measured completion,
 including failures and rate pacing). Publish known-token coverage; do not label a
 partial sum as full throughput. Full token throughput is null unless every success
 has usage; no success gives null. Also report successful requests/sec using that
-same window. This is client-observed mixed-workload throughput, not decode speed.
+same window. Each prompt slice uses its own earliest-start/latest-end subwindow;
+slice rates are not additive. This is client-observed mixed-workload throughput,
+not decode speed.
 
 ## Provenance and reproducibility
 

@@ -29,6 +29,16 @@ def main():
     suite.add_argument('--split', choices=('development','heldout'), required=True)
     suite.add_argument('--output', required=True)
     sub.add_parser('replay')
+    experiment=sub.add_parser('benchmark-suite',help='Finite serving experiment; synthetic virtual fixture by default')
+    experiment.add_argument('--mode',choices=('synthetic','endpoint'),default='synthetic')
+    experiment.add_argument('--runs',type=int,default=9)
+    experiment.add_argument('--warmup',type=int,default=1)
+    experiment.add_argument('--concurrency',type=int,default=2)
+    experiment.add_argument('--rate',type=float,default=2)
+    experiment.add_argument('--timeout',type=float,default=10)
+    experiment.add_argument('--seed',type=int,default=17)
+    experiment.add_argument('--hardware-label',default='not supplied')
+    experiment.add_argument('--model-label',default='not supplied')
     bench = sub.add_parser('benchmark')
     bench.add_argument('--base-url', required=True, help='OpenAI-compatible API root including /v1')
     bench.add_argument('--model', required=True)
@@ -75,10 +85,16 @@ def main():
             result = {b: r['summary'] for b,r in report['baselines'].items()}
         elif args.command == 'replay':
             result = replay()
+        elif args.command == 'benchmark-suite':
+            from .serving import SuiteConfig,endpoint_from_env,run_suite,synthetic_suite
+            config=SuiteConfig(args.runs,args.warmup,args.concurrency,args.rate,args.timeout,args.seed)
+            result=synthetic_suite(config) if args.mode=='synthetic' else run_suite(config,endpoint_from_env(config),args.hardware_label,args.model_label)
         else:
             result = benchmark(args.base_url, args.model, os.environ.get('LAB_API_KEY', ''), args.runs, args.timeout)
         print(json.dumps(result, indent=2))
         if args.command == 'benchmark' and result['failures']:
+            raise SystemExit(1)
+        if args.command == 'benchmark-suite' and result['summary']['successful']!=result['summary']['requested']:
             raise SystemExit(1)
     except ValueError as exc:
         parser.error(str(exc))

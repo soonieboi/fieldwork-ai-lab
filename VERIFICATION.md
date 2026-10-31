@@ -256,3 +256,49 @@ identity are byte-equivalent after excluding refreshed runtime source hashes.
 The controlled-delay frontend harness and static integrity checks pass. Gitleaks
 directory/history scans and focused staged-content checks are repeated before
 publication; these cannot prove the absence of every possible secret format.
+
+## Reproducible serving experiments — PR #4
+
+PR #3 merged at `6b953b1dfca41a91e9936ef9a9161fc76ac1569e` after exact-head
+independent code/browser review; post-merge CI `41168383759` passed Python
+3.10/3.14 before PR #4 implementation. The new measurement design was committed
+before code at `7f33f12`. Original core/replay/benchmark and all frozen evaluation
+corpora, policies, labels, scorers and artifacts remain unchanged.
+
+Final local **118 tests passed** on Python 3.14.2. Sixteen new tests cover known
+clock arithmetic and nearest-rank/null denominators, usage provenance/coverage,
+failure-window throughput, warmup exclusion and cross-phase pacing, varied output
+caps, finite limits, actual overlapping localhost streams, per-request isolation,
+role/heartbeat exclusion, refusal/error/length/timeout, partial/disconnected bodies,
+strict chunked framing and Content-Length, line/body limits, no retry/redirect/
+proxy inheritance, verified TLS context, sanitized initialization errors,
+environment-only opt-in and browser-only fixed synthetic mode. All HTTP traffic
+used authored local fake servers; HTTPS construction was mocked, not a live call.
+
+The virtual fixture report `evals/serving-v1/synthetic-virtual.json` reproduces
+byte for byte twice and includes workload/implementation hashes. Its timestamps
+and token counts are explicitly invented; its rates are arithmetic demonstrations,
+not measured inference/GPU performance. Tests verify the real adapter machinery,
+not model competence or a real hardware ranking. No paid calls, model downloads,
+new credentials, private-data transmission or deployment occurred.
+
+Frozen RAG-v1 reproduction, 19 generation contracts, 23 agent contracts/artifact,
+frontend static integrity and the controlled-delay agent UI harness all pass.
+Gitleaks directory/history and staged-content checks are run before publication;
+scanning cannot guarantee absence of every secret format. Existing dummy
+credential-isolation placeholders are not actual credentials.
+
+Rendered Chrome QA verified repeated batch runs, clear synthetic labels/sample
+sizes/slices, expanded report/provenance, contextual Docs/back and direct reload.
+At 320 and 390 pixels the page width matched the viewport, with readable wrapped
+controls, statistics, documentation and expanded JSON. Screenshot inspection
+confirmed the layouts; the temporary viewport was reset. Retrieval shoe/receipt
+quotes, bounded offline search/read/cite and legacy replay still work. No console
+errors/warnings were observed. Browser tests exercise the offline surface only;
+live endpoint compatibility, provider seed support, model/GPU performance, broad
+browser/device coverage and meaningful large-sample tail behavior remain unverified.
+
+The separate PR4 preview is on 8093 with every endpoint opt-in disabled. Ports
+8080/8091/8092 remain healthy; CritterDex 4317 was not touched. OS-managed DNS may
+outlast network deadlines. Local development serving is not authenticated public
+hosting. Prompt-slice rates use their own subwindows and must not be added.

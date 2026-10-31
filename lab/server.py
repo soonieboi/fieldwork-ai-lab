@@ -93,6 +93,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200, run_agent(INDEX, data.get('task', 'retrieval'), data.get('budget', 6)))
             if self.path == '/api/replay':
                 return self.send(200, replay())
+            if self.path == '/api/serving-suite':
+                if data:raise ValueError('Only the fixed synthetic suite is available in the browser')
+                from .serving import synthetic_suite
+                return self.send(200, synthetic_suite())
             self.send(404, {'error': 'Not found'})
         except (ValueError, TypeError) as exc:
             self.send(400, {'error': str(exc)})

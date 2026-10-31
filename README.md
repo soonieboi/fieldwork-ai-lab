@@ -241,3 +241,41 @@ See `VERIFICATION.md` for the recorded checks. Screenshot materialization failed
 twice in the execution environment, so implementation follows the extracted
 functional brief rather than pixel-level details. The app has no external fonts,
 scripts, telemetry, or runtime dependency fetches.
+
+## Finite serving experiments (new)
+
+```bash
+python3 -m lab benchmark-suite --runs 9 --warmup 1 --concurrency 2 --rate 2 --seed 17
+python3 scripts/check_serving_fixture.py
+```
+
+Default mode is a **synthetic virtual fixture**: invented timestamps and token
+counts demonstrate arithmetic, not model/GPU performance. The browser's Serving
+batch demo also runs only this fixed fixture. Original replay/benchmark remain.
+
+For real traffic, configure `LAB_SERVING_ENABLED=1`, `LAB_SERVING_BASE_URL`,
+`LAB_SERVING_MODEL` and any required `LAB_SERVING_API_KEY` privately, then use:
+
+```bash
+python3 -m lab benchmark-suite --mode endpoint --runs 9 --warmup 1 \
+  --concurrency 2 --rate 2 --timeout 10 --seed 17 \
+  --model-label 'operator supplied model' --hardware-label 'operator supplied hardware'
+```
+
+Only three bundled public prompts are sent. Endpoint mode never reads a question
+or document corpus. Remote URLs require HTTPS; loopback HTTP is allowed. This
+adapter ignores proxy variables, follows no redirects, performs no retries and
+uses bounded complete HTTP/SSE framing. Credentials are environment-only and
+never serialized. Endpoint/model strings are hashed in reports; optional labels
+must be non-sensitive. Hardware is not detected. Provider seed support is not
+verified; incompatible options cause a recorded failure rather than fallback.
+
+Warmup outcomes are excluded from all measurements. Reports include per-prompt
+slices, first-content/duration p50/p90/p95 with nearest-rank estimator and sample
+sizes, separate failure/refusal/timeout counts, and valid provider usage coverage.
+Unknown usage is never guessed. Full successful-output token throughput is null
+unless every successful request supplies a valid completion count; its denominator
+is the whole measured window including failed requests and rate pacing. Stream
+events are not tokens. No saturation, decode-speed, semantic-quality or tail
+reliability claim is made from this small mixed workload. See
+[the measurement design](docs/serving-benchmark-design.md) for bounds and caveats.

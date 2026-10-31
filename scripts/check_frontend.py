@@ -28,7 +28,7 @@ def check():
         view,*section=link[1:].split('/')
         assert view in page.ids, 'Missing view target'
         if section:assert 'doc-'+section[0] in page.ids, 'Missing documentation target'
-    assert {'corpus','answer-mode','question','endpoint-notice','doc-generation'}<=set(page.ids)
+    assert {'corpus','answer-mode','question','endpoint-notice','doc-generation','serving-suite','suite-result','doc-serving-suite'}<=set(page.ids)
     assert any(o.get('value')=='endpoint' and 'disabled' in o for o in page.options)
     assert '.innerHTML' not in text and 'eval(' not in text, 'Untrusted text must not execute as HTML/code'
     scripts=re.findall(r'<script>(.*?)</script>',text,re.S)

@@ -1,0 +1,369 @@
+{
+  "by_prompt": {
+    "long": {
+      "duration_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 67.683,
+        "p90": 73.228,
+        "p95": 73.228
+      },
+      "elapsed_window_seconds": 2.067683,
+      "failure_duration_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 0,
+        "p50": null,
+        "p90": null,
+        "p95": null
+      },
+      "first_content_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 43.228,
+        "p90": 44.084,
+        "p95": 44.084
+      },
+      "inter_content_event_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 30.0,
+        "p90": 30.0,
+        "p95": 30.0
+      },
+      "requested": 3,
+      "status_counts": {
+        "success": 3
+      },
+      "successful": 3,
+      "successful_output_tokens_per_second": 92.85754189867495,
+      "successful_requests_per_second": 1.4508990921667961,
+      "token_coverage": {
+        "known_completion_tokens": 192,
+        "known_successes": 3,
+        "successful_requests": 3
+      },
+      "window_scope": "earliest start through latest end of requests in this summary; slice rates are not additive"
+    },
+    "medium": {
+      "duration_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 55.322,
+        "p90": 69.21,
+        "p95": 69.21
+      },
+      "elapsed_window_seconds": 2.542203,
+      "failure_duration_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 0,
+        "p50": null,
+        "p90": null,
+        "p95": null
+      },
+      "first_content_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 45.322,
+        "p90": 49.21,
+        "p95": 49.21
+      },
+      "inter_content_event_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 10.0,
+        "p90": 20.0,
+        "p95": 20.0
+      },
+      "requested": 3,
+      "status_counts": {
+        "success": 3
+      },
+      "successful": 3,
+      "successful_output_tokens_per_second": 37.76251971225371,
+      "successful_requests_per_second": 1.1800787410079285,
+      "token_coverage": {
+        "known_completion_tokens": 96,
+        "known_successes": 3,
+        "successful_requests": 3
+      },
+      "window_scope": "earliest start through latest end of requests in this summary; slice rates are not additive"
+    },
+    "short": {
+      "duration_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 56.134,
+        "p90": 65.793,
+        "p95": 65.793
+      },
+      "elapsed_window_seconds": 3.550539,
+      "failure_duration_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 0,
+        "p50": null,
+        "p90": null,
+        "p95": null
+      },
+      "first_content_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 35.793,
+        "p90": 46.134,
+        "p95": 46.134
+      },
+      "inter_content_event_ms": {
+        "estimator": "nearest_rank_ceil_p_times_n",
+        "n": 3,
+        "p50": 20.0,
+        "p90": 30.0,
+        "p95": 30.0
+      },
+      "requested": 3,
+      "status_counts": {
+        "success": 3
+      },
+      "successful": 3,
+      "successful_output_tokens_per_second": 13.519075153031833,
+      "successful_requests_per_second": 0.8449421970644896,
+      "token_coverage": {
+        "known_completion_tokens": 48,
+        "known_successes": 3,
+        "successful_requests": 3
+      },
+      "window_scope": "earliest start through latest end of requests in this summary; slice rates are not additive"
+    }
+  },
+  "caveats": [
+    "First content is not first header or token. Event gaps are not token ITL.",
+    "Nearest-rank percentiles describe these samples only; prompt slices have different workloads.",
+    "Aggregate successful tokens use the full mixed-request elapsed window, including failures and pacing.",
+    "Unknown token usage is never estimated. Warmup excluded. No saturation or semantic quality claim."
+  ],
+  "config": {
+    "concurrency": 2,
+    "rate": 2,
+    "runs": 9,
+    "seed": 17,
+    "timeout": 10,
+    "warmup": 1
+  },
+  "implementation_sha256": {
+    "generation.py": "b075bc57ff3b0f2622ef6d2e206c9a8810bf6213097ad1d00ce3cfffa05f8546",
+    "serving.py": "58fa99e435ee05a1f5503ec34b5397e4a373c869a04006e61e1b4233403a80ee"
+  },
+  "metadata": {
+    "clock": "virtual seconds; no wall-clock performance",
+    "hardware_operator_supplied": "not supplied",
+    "mode": "SYNTHETIC virtual fixture \u2014 no inference or measured model performance",
+    "model": "none"
+  },
+  "requests_relative_ms": [
+    {
+      "completion_tokens": 16,
+      "content_events": 2,
+      "duration_ms": 56.13381554237359,
+      "end": 56.134,
+      "event_gaps_ms": [
+        10.000000000000002
+      ],
+      "first_content_ms": 46.13381554237358,
+      "prompt_id": "short",
+      "request": 1,
+      "start": 0.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 32,
+      "content_events": 2,
+      "duration_ms": 69.20989548647754,
+      "end": 569.21,
+      "event_gaps_ms": [
+        19.999999999999996
+      ],
+      "first_content_ms": 49.209895486477535,
+      "prompt_id": "medium",
+      "request": 2,
+      "start": 500.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 16,
+      "content_events": 2,
+      "duration_ms": 65.79250755528932,
+      "end": 1065.793,
+      "event_gaps_ms": [
+        30.000000000000007
+      ],
+      "first_content_ms": 35.79250755528931,
+      "prompt_id": "short",
+      "request": 3,
+      "start": 1000.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 32,
+      "content_events": 2,
+      "duration_ms": 55.322148755959056,
+      "end": 1555.322,
+      "event_gaps_ms": [
+        10.000000000000002
+      ],
+      "first_content_ms": 45.32214875595905,
+      "prompt_id": "medium",
+      "request": 4,
+      "start": 1500.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 64,
+      "content_events": 2,
+      "duration_ms": 64.08439733686825,
+      "end": 2064.084,
+      "event_gaps_ms": [
+        20.000000000000004
+      ],
+      "first_content_ms": 44.08439733686825,
+      "prompt_id": "long",
+      "request": 5,
+      "start": 2000.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 64,
+      "content_events": 2,
+      "duration_ms": 73.2276611444766,
+      "end": 2573.228,
+      "event_gaps_ms": [
+        29.999999999999993
+      ],
+      "first_content_ms": 43.227661144476606,
+      "prompt_id": "long",
+      "request": 6,
+      "start": 2500.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 32,
+      "content_events": 2,
+      "duration_ms": 42.20324097834423,
+      "end": 3042.203,
+      "event_gaps_ms": [
+        10.000000000000002
+      ],
+      "first_content_ms": 32.20324097834423,
+      "prompt_id": "medium",
+      "request": 7,
+      "start": 3000.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 16,
+      "content_events": 2,
+      "duration_ms": 50.53873557581054,
+      "end": 3550.539,
+      "event_gaps_ms": [
+        20.000000000000004
+      ],
+      "first_content_ms": 30.538735575810534,
+      "prompt_id": "short",
+      "request": 8,
+      "start": 3500.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    },
+    {
+      "completion_tokens": 64,
+      "content_events": 2,
+      "duration_ms": 67.68342209088594,
+      "end": 4067.683,
+      "event_gaps_ms": [
+        30.0
+      ],
+      "first_content_ms": 37.68342209088595,
+      "prompt_id": "long",
+      "request": 9,
+      "start": 4000.0,
+      "status": "success",
+      "token_provenance": "synthetic_fixture_count_not_model_tokens"
+    }
+  ],
+  "summary": {
+    "duration_ms": {
+      "estimator": "nearest_rank_ceil_p_times_n",
+      "n": 9,
+      "p50": 64.084,
+      "p90": 73.228,
+      "p95": 73.228
+    },
+    "elapsed_window_seconds": 4.067683,
+    "failure_duration_ms": {
+      "estimator": "nearest_rank_ceil_p_times_n",
+      "n": 0,
+      "p50": null,
+      "p90": null,
+      "p95": null
+    },
+    "first_content_ms": {
+      "estimator": "nearest_rank_ceil_p_times_n",
+      "n": 9,
+      "p50": 43.228,
+      "p90": 49.21,
+      "p95": 49.21
+    },
+    "inter_content_event_ms": {
+      "estimator": "nearest_rank_ceil_p_times_n",
+      "n": 9,
+      "p50": 20.0,
+      "p90": 30.0,
+      "p95": 30.0
+    },
+    "requested": 9,
+    "status_counts": {
+      "success": 9
+    },
+    "successful": 9,
+    "successful_output_tokens_per_second": 82.60229844221458,
+    "successful_requests_per_second": 2.2125615654164617,
+    "token_coverage": {
+      "known_completion_tokens": 336,
+      "known_successes": 9,
+      "successful_requests": 9
+    },
+    "window_scope": "earliest start through latest end of requests in this summary; slice rates are not additive"
+  },
+  "version": "fieldwork-serving-v1",
+  "warmup": {
+    "excluded_from_metrics": true,
+    "results": [
+      {
+        "prompt_id": "short",
+        "status": "success"
+      }
+    ]
+  },
+  "workload": [
+    {
+      "id": "short",
+      "max_tokens": 32,
+      "prompt": "Suggest one easy weekday breakfast."
+    },
+    {
+      "id": "medium",
+      "max_tokens": 64,
+      "prompt": "A fictional shopper has unworn shoes bought ten days ago and a receipt. A shop allows returns within thirty days with a receipt. Explain the next step in two sentences."
+    },
+    {
+      "id": "long",
+      "max_tokens": 128,
+      "prompt": "Help plan a simple weekend picnic for four friends. One friend avoids nuts, another prefers vegetarian food, and everyone will walk to the park. There is no refrigerator or cooking equipment at the picnic site. Suggest a practical shopping list and explain safe packing, drinks, cleanup, and a rain alternative. Keep the response organized and avoid assuming a budget or specific shop."
+    }
+  ],
+  "workload_sha256": "adadb9d723d6bde51cc368a5cb0602391641683182e2f78ea6a4137acac9823b"
+}
