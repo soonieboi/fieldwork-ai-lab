@@ -307,3 +307,8 @@ explicitly bypass inherited proxies and cached urllib openers without changing
 your machine's settings. Scanner/browser success has bounded coverage; live model
 support review, authorized endpoint access/spend and real GPU experiments remain
 future user-controlled work.
+
+## Credits & contact
+
+Built by [soonieboi](https://github.com/soonieboi), with development assistance from Codex.
+Questions or feedback? Use [GitHub Issues](https://github.com/soonieboi/fieldwork-ai-lab/issues).
